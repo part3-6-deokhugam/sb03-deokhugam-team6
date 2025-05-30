@@ -1,1 +1,38 @@
-spring.application.name=deokhugam
+spring:
+  application:
+    name: deokhugam
+  profiles:
+    active: dev
+
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      ddl-auto: none
+
+  batch:
+    jdbc:
+      initialize-schema: never
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+# Swagger
+springdoc:
+    api-docs:
+      path: /v3/api-docs
+    swagger-ui:
+      path: /swagger-ui.html
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: WARN
+    com.part3.deokhugam: DEBUG
