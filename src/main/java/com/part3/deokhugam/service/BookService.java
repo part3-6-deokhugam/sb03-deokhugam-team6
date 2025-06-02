@@ -123,4 +123,20 @@ public class BookService {
                 book.getUpdatedAt()
         );
     }
+
+    public String ocrIsbn(MultipartFile image) throws IOException {
+        if(image.isEmpty()) {
+            throw new BookException(ErrorCode.INVALID_INPUT_VALUE, "image file is empty.");
+        }
+
+        BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
+
+        String result = null;
+        try {
+            result = tesseract.doOCR(bufferedImage);
+        } catch (TesseractException e) {
+            throw new BookException(ErrorCode.OCR_ERROR, "OCR processing failed: " + e.getMessage());
+        }
+        return result.replaceAll("[^0-9]", "").trim();
+    }
 }
