@@ -212,4 +212,12 @@ public class BookService {
                 hasNext
         );
     }
+
+    public void deleteBookPhysical(UUID bookId) {
+        Book book = bookRepository.findById(bookId).orElseThrow(
+                () -> new BookException(ErrorCode.BOOK_NOT_FOUND, "Book not found with ID: " + bookId));
+
+        bookRepository.deleteById(bookId);
+        // 도서 관련 리뷰 삭제 로직
+    }
 }
