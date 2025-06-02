@@ -146,4 +146,10 @@ public class BookService {
                 .orElseThrow(() -> new BookException(ErrorCode.BOOK_NOT_FOUND, "Book not found with ID: " + bookId));
         return bookMapper.toDto(book);
     }
+
+    public void deleteBookLogical(UUID bookId) {
+        Book book = bookRepository.findByIdAndDeletedFalse(bookId).orElseThrow(
+                () -> new BookException(ErrorCode.BOOK_NOT_FOUND, "Book not found with ID: " + bookId));
+        book.logicalDelete();
+    }
 }
