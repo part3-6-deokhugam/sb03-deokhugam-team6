@@ -91,4 +91,11 @@ public class BookController implements BookApi {
         CursorPageResponsePopularBookDto popularBooks = bookService.getPopularBooks(period, after, cursor, direction, limit);
         return ResponseEntity.ok(popularBooks);
     }
+
+    @Override
+    @GetMapping("/info")
+    public ResponseEntity<NaverBookDto> getBookInfo(@RequestParam String isbn) throws JsonProcessingException {
+        NaverBookDto naverBookDto = naverBookClient.getIsbn(isbn);
+        return ResponseEntity.ok(naverBookDto);
+    }
 }
