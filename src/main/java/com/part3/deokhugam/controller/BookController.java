@@ -55,4 +55,11 @@ public class BookController implements BookApi {
         String isbn = bookService.ocrIsbn(image);
         return ResponseEntity.ok(isbn);
     }
+
+    @Override
+    @GetMapping("/{bookId}")
+    public ResponseEntity<BookDto> getBookById(@PathVariable UUID bookId) {
+        BookDto book = bookService.getBookById(bookId);
+        return ResponseEntity.ok(book);
+    }
 }
