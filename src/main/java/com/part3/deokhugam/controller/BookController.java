@@ -48,4 +48,11 @@ public class BookController implements BookApi {
         BookDto createdBook = bookService.createBook(bookCreateRequest, file);
         return ResponseEntity.ok(createdBook);
     }
+
+    @Override
+    @PostMapping(value = "/isbn/ocr", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> ocrIsbn(@RequestParam("image") MultipartFile image) throws TesseractException, IOException {
+        String isbn = bookService.ocrIsbn(image);
+        return ResponseEntity.ok(isbn);
+    }
 }
