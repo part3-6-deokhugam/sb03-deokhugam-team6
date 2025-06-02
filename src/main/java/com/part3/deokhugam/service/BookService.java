@@ -152,4 +152,26 @@ public class BookService {
                 () -> new BookException(ErrorCode.BOOK_NOT_FOUND, "Book not found with ID: " + bookId));
         book.logicalDelete();
     }
+
+    public BookDto updateBook(UUID bookId, BookUpdateRequest bookUpdateRequest, MultipartFile file) {
+        Book book = bookRepository.findByIdAndDeletedFalse(bookId)
+                .orElseThrow(() -> new BookException(ErrorCode.BOOK_NOT_FOUND, "Book not found with ID: " + bookId));
+
+        String thumbnailUrl = book.getThumbnailUrl();
+
+        if(file != null) {
+            thumbnailUrl = s3Service.uploadFile(file);
+        }
+
+        book.update(
+                bookUpdateRequest.title(),
+                bookUpdateRequest.author(),
+                bookUpdateRequest.description(),
+                bookUpdateRequest.publisher(),
+                bookUpdateRequest.publishedDate(),
+                thumbnailUrl
+        );
+
+        return bookMapper.toDto(book);
+    }
 }
