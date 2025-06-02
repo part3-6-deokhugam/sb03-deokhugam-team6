@@ -40,4 +40,12 @@ public class BookController implements BookApi {
         CursorPageResponseBookDto books = bookService.getBooks(keyword, after, cursor, orderBy, direction, limit);
         return ResponseEntity.ok(books);
     }
+
+    @Override
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<BookDto> createBook(@RequestPart("bookData") @Valid BookCreateRequest bookCreateRequest,
+                                              @RequestPart(value = "thumbnailImage", required = false) MultipartFile file) {
+        BookDto createdBook = bookService.createBook(bookCreateRequest, file);
+        return ResponseEntity.ok(createdBook);
+    }
 }
