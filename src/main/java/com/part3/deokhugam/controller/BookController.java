@@ -98,4 +98,11 @@ public class BookController implements BookApi {
         NaverBookDto naverBookDto = naverBookClient.getIsbn(isbn);
         return ResponseEntity.ok(naverBookDto);
     }
+
+    @Override
+    @DeleteMapping("/physical/{bookId}")
+    public ResponseEntity<Void> deleteBookPhysical(@PathVariable UUID bookId) {
+        bookService.deleteBookPhysical(bookId);
+        return ResponseEntity.noContent().build();
+    }
 }
