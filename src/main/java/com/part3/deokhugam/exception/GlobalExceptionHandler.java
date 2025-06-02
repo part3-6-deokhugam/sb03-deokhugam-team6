@@ -24,6 +24,7 @@ public class GlobalExceptionHandler {
         .status(code.getStatus().value())
         .error(code.name())
         .message(ex.getMessage())   // ErrorCode 메시지 + (detail 포함)
+        .details(ex.getDetails())
         .build();
 
     return new ResponseEntity<>(response, code.getStatus());
