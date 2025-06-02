@@ -220,4 +220,72 @@ public class BookService {
         bookRepository.deleteById(bookId);
         // 도서 관련 리뷰 삭제 로직
     }
+
+    public void calculateRanking(Period period) {
+        LocalDate now = LocalDate.now();
+        Instant start = null;
+        Instant end = null;
+
+        ZoneId UTC = ZoneOffset.UTC;
+
+        switch (period) {
+            case DAILY:
+                start = now.minusDays(1).atStartOfDay(UTC).toInstant();
+                end = now.minusDays(1).atTime(LocalTime.MAX).atZone(UTC).toInstant();
+                break;
+            case WEEKLY:
+                start = now.minusDays(7).atStartOfDay(UTC).toInstant();
+                end = now.minusDays(1).atTime(LocalTime.MAX).atZone(UTC).toInstant();
+                break;
+            case MONTHLY:
+                start = now.minusMonths(1).atStartOfDay(UTC).toInstant();
+                end = now.minusDays(1).atTime(LocalTime.MAX).atZone(UTC).toInstant();
+                break;
+            case ALL_TIME:
+                start = LocalDate.of(2025, 1, 1).atStartOfDay(UTC).toInstant();
+                end = now.minusDays(1).atTime(LocalTime.MAX).atZone(UTC).toInstant();
+                break;
+        }
+
+        List<Review> reviews = reviewRepository.findByCreatedAtBetweenAndDeletedFalse(start, end);
+
+        Map<UUID, List<Review>> grouped = reviews.stream()
+                .collect(Collectors.groupingBy(r -> r.getBook().getId()));
+
+        List<PopularBook> rankingList = grouped.entrySet().stream()
+                .map(entry -> {
+                    UUID bookId = entry.getKey();
+                    List<Review> reviewList = entry.getValue();
+
+                    int reviewCount = reviewList.size();
+
+                    BigDecimal avgRating = reviewList.stream()
+                            .map(Review::getRating)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add)
+                            .divide(BigDecimal.valueOf(reviewCount), 2, RoundingMode.HALF_UP);
+
+                    BigDecimal weightedCount = BigDecimal.valueOf(reviewCount).multiply(BigDecimal.valueOf(0.4));
+                    BigDecimal weightedRating = avgRating.multiply(BigDecimal.valueOf(0.6));
+                    BigDecimal score = weightedCount.add(weightedRating);
+
+                    Book book = bookRepository.findById(bookId)
+                            .orElseThrow(() -> new BookException(ErrorCode.BOOK_NOT_FOUND, "Book not found with ID: " + bookId));
+
+                    return PopularBook.builder()
+                            .period(period)
+                            .periodDate(now)
+                            .score(score)
+                            .reviewCount(reviewCount)
+                            .book(book)
+                            .build();
+                })
+                .sorted(Comparator.comparing(PopularBook::getScore).reversed())
+                .collect(Collectors.toList());
+
+        for (int i = 0; i < rankingList.size(); i++) {
+            rankingList.get(i).setRank(i + 1);
+        }
+
+        popularBookRepository.saveAll(rankingList);
+    }
 }
