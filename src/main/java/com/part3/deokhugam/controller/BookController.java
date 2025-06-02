@@ -69,4 +69,13 @@ public class BookController implements BookApi {
         bookService.deleteBookLogical(bookId);
         return ResponseEntity.noContent().build();
     }
+
+    @Override
+    @PatchMapping(value = "/{bookId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<BookDto> updateBook(@PathVariable UUID bookId,
+                                              @RequestPart("bookData") @Valid BookUpdateRequest bookUpdateRequest,
+                                              @RequestPart(value = "thumbnailImage", required = false) MultipartFile file) {
+        BookDto updatedBook = bookService.updateBook(bookId, bookUpdateRequest, file);
+        return ResponseEntity.ok(updatedBook);
+    }
 }
