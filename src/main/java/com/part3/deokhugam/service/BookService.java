@@ -139,4 +139,11 @@ public class BookService {
         }
         return result.replaceAll("[^0-9]", "").trim();
     }
+
+    @Transactional(readOnly = true)
+    public BookDto getBookById(UUID bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookException(ErrorCode.BOOK_NOT_FOUND, "Book not found with ID: " + bookId));
+        return bookMapper.toDto(book);
+    }
 }
