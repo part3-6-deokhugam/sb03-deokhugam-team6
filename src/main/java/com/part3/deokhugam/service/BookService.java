@@ -159,8 +159,10 @@ public class BookService {
 
         String thumbnailUrl = book.getThumbnailUrl();
 
-        if(file != null) {
+        if(file != null && !file.isEmpty()) {
             thumbnailUrl = s3Service.uploadFile(file);
+        }else {
+            thumbnailUrl = "/images/book-placeholder.png";
         }
 
         book.update(
