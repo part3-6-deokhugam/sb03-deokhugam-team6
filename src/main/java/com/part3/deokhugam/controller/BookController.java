@@ -78,4 +78,17 @@ public class BookController implements BookApi {
         BookDto updatedBook = bookService.updateBook(bookId, bookUpdateRequest, file);
         return ResponseEntity.ok(updatedBook);
     }
+
+    @Override
+    @GetMapping("/popular")
+    public ResponseEntity<CursorPageResponsePopularBookDto> getPopularBooks(
+            @RequestParam(value = "period", defaultValue = "DAILY") String period,
+            @RequestParam(value = "direction", defaultValue = "ASC") String direction,
+            @RequestParam(value = "cursor", required = false) String cursor,
+            @RequestParam(value = "after", required = false) Instant after,
+            @RequestParam(value = "limit", defaultValue = "50") int limit
+    ) {
+        CursorPageResponsePopularBookDto popularBooks = bookService.getPopularBooks(period, after, cursor, direction, limit);
+        return ResponseEntity.ok(popularBooks);
+    }
 }
