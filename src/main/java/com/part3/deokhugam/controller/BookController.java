@@ -62,4 +62,11 @@ public class BookController implements BookApi {
         BookDto book = bookService.getBookById(bookId);
         return ResponseEntity.ok(book);
     }
+
+    @Override
+    @DeleteMapping("/{bookId}")
+    public ResponseEntity<Void> deleteBookLogical(@PathVariable UUID bookId) {
+        bookService.deleteBookLogical(bookId);
+        return ResponseEntity.noContent().build();
+    }
 }
