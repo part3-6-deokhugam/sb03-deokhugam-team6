@@ -174,4 +174,42 @@ public class BookService {
 
         return bookMapper.toDto(book);
     }
+
+    @Transactional(readOnly = true)
+    public CursorPageResponsePopularBookDto getPopularBooks(String period, Instant after, String cursor, String direction, int limit) {
+        try {
+            Period.valueOf(period);
+        } catch (IllegalArgumentException e) {
+            throw new BookException(ErrorCode.INVALID_INPUT_VALUE ,"잘못된 period가 전달되었습니다. period  : " + period);
+        }
+
+        List<PopularBook> popularBooks = popularBookRepository.findListByCursor(period, after, cursor, direction,
+                limit + 1);
+
+        boolean hasNext = popularBooks.size() > limit;
+        List<PopularBook> pagedBooks = hasNext ? popularBooks.subList(0, limit) : popularBooks;
+
+        List<PopularBookDto> popularBookDtos = pagedBooks.stream()
+                .map(popularBookMapper::toDto)
+                .toList();
+
+        Long totalElements = popularBookRepository.getTotalElements(period);
+
+        String nextCursor = null;
+        Instant nextAfter = null;
+
+        if (hasNext && !pagedBooks.isEmpty()) {
+            nextAfter = popularBookDtos.get(popularBookDtos.size() - 1).createdAt();
+            nextCursor = String.valueOf(cursor == null ? limit : Integer.parseInt(cursor) + limit);
+        }
+
+        return new CursorPageResponsePopularBookDto(
+                popularBookDtos,
+                nextCursor,
+                nextAfter,
+                popularBookDtos.size(),
+                totalElements,
+                hasNext
+        );
+    }
 }
