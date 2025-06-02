@@ -84,4 +84,43 @@ public class BookService {
                 hasNext
         );
     }
+
+    public BookDto createBook(BookCreateRequest request, MultipartFile image) {
+        if(bookRepository.existsByIsbn(request.isbn())) {
+            throw new BookException(ErrorCode.BOOK_ALREADY_EXISTS, "Book with ISBN already exists.");
+        }
+
+        String thumbnailUrl = null;
+
+        if(image != null) {
+            thumbnailUrl = s3Service.uploadFile(image);
+        }
+
+        Book book = Book.builder()
+                .title(request.title())
+                .author(request.author())
+                .description(request.description())
+                .publisher(request.publisher())
+                .publishedDate(request.publishedDate())
+                .thumbnailUrl(thumbnailUrl)
+                .isbn(request.isbn())
+                .build();
+
+        bookRepository.save(book);
+
+        return new BookDto(
+                book.getId(),
+                book.getTitle(),
+                book.getAuthor(),
+                book.getDescription(),
+                book.getPublisher(),
+                book.getPublishedDate(),
+                book.getIsbn(),
+                thumbnailUrl,
+                book.getReviewCount(),
+                book.getRating(),
+                book.getCreatedAt(),
+                book.getUpdatedAt()
+        );
+    }
 }
