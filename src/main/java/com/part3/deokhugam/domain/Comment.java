@@ -36,4 +36,7 @@ public class Comment extends BaseEntity {
     public void update(String content) {
         this.content = content;
     }
+    public void markAsDeleted(){
+        this.deleted = true;
+    }
 }

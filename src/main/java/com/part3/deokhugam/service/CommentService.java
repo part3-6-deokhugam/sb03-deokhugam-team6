@@ -36,15 +36,36 @@ public class CommentService {
 
         return commentMapper.toDto(savedComment);
     }
+
     @Transactional
     public CommentDto update(UUID commentId, UUID userId, CommentUpdateRequest request) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(()-> new RuntimeException("Comment Not Found"));
-        if(!comment.getUser().getId().equals(userId)) {
+                .orElseThrow(() -> new RuntimeException("Comment Not Found"));
+        if (!comment.getUser().getId().equals(userId)) {
             throw new RuntimeException("댓글 작성자가 아닙니다");
         }
         comment.update(request.getContent());
         return commentMapper.toDto(comment);
 
+    }
+
+    @Transactional
+    public void deleteLogically(UUID commentId, UUID userId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment Not Found"));
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new RuntimeException("삭제 권한이 없습니다");
+        }
+        comment.markAsDeleted();
+    }
+
+    @Transactional
+    public void deletePhysically(UUID commentId, UUID userId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment Not Found"));
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new RuntimeException("삭제 권한이 없습니다");
+        }
+        commentRepository.delete(comment);
     }
 }
