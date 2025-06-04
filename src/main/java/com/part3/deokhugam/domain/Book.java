@@ -41,13 +41,6 @@ public class Book extends BaseEntity {
 
     @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private BookMetrics bookMetrics;
-/*
-    @Column(nullable = false)
-    private Integer reviewCount = 0;
-
-    @Column(nullable = false, precision = 2, scale = 1)
-    private BigDecimal rating = new BigDecimal("0.0");
-*/
 
     @Column(nullable = false)
     private boolean deleted = false;
