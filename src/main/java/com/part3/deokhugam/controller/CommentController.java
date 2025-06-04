@@ -19,41 +19,49 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/comments")
 public class CommentController implements CommentApi {
-    private final CommentService commentService;
 
-    @Override
-    @PostMapping
-    public ResponseEntity<CommentDto> create(@RequestBody @Valid CommentCreateRequest request) {
-        CommentDto commentDto = commentService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(commentDto);
-    }
+  private final CommentService commentService;
 
-    @Override
-    @PatchMapping("/{commentId}")
-    public ResponseEntity<CommentDto> update(
-            @PathVariable UUID commentId,
-            @RequestHeader("Deokhugam-Request-User-ID") UUID userId,
-            @RequestBody @Valid CommentUpdateRequest request) {
+  @Override
+  @PostMapping
+  public ResponseEntity<CommentDto> create(@RequestBody @Valid CommentCreateRequest request) {
+    CommentDto commentDto = commentService.create(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(commentDto);
+  }
 
-        CommentDto updated = commentService.update(commentId, userId, request);
-        return ResponseEntity.status(HttpStatus.OK).body(updated);
-    }
-  
-    @Override
-    @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteLogically(
-            @PathVariable UUID commentId,
-            @RequestHeader("Deokhugam-Request-User-ID") UUID userId) {
-        commentService.deleteLogically(commentId, userId);
-        return ResponseEntity.noContent().build();
-    }
-  
-    @Override
-    @DeleteMapping("/{commentId}/hard")
-    public ResponseEntity<Void> deletePhysically(
-            @PathVariable UUID commentId,
-            @RequestHeader("Deokhugam-Request-User-ID") UUID userId) {
-        commentService.deletePhysically(commentId, userId);
-        return ResponseEntity.noContent().build();
-    }
+  @Override
+  @GetMapping("/{commentId}")
+  public ResponseEntity<CommentDto> findById(@PathVariable UUID commentId) {
+    CommentDto commentDto = commentService.findById(commentId);
+    return ResponseEntity.status(HttpStatus.OK).body(commentDto);
+  }
+
+  @Override
+  @PatchMapping("/{commentId}")
+  public ResponseEntity<CommentDto> update(
+      @PathVariable UUID commentId,
+      @RequestHeader("Deokhugam-Request-User-ID") UUID userId,
+      @RequestBody @Valid CommentUpdateRequest request) {
+
+    CommentDto updated = commentService.update(commentId, userId, request);
+    return ResponseEntity.status(HttpStatus.OK).body(updated);
+  }
+
+  @Override
+  @DeleteMapping("/{commentId}")
+  public ResponseEntity<Void> deleteLogically(
+      @PathVariable UUID commentId,
+      @RequestHeader("Deokhugam-Request-User-ID") UUID userId) {
+    commentService.deleteLogically(commentId, userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  @DeleteMapping("/{commentId}/hard")
+  public ResponseEntity<Void> deletePhysically(
+      @PathVariable UUID commentId,
+      @RequestHeader("Deokhugam-Request-User-ID") UUID userId) {
+    commentService.deletePhysically(commentId, userId);
+    return ResponseEntity.noContent().build();
+  }
 }
