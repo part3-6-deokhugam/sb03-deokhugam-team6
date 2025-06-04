@@ -166,12 +166,14 @@ public class BookService {
         Book book = bookRepository.findByIdAndDeletedFalse(bookId)
                 .orElseThrow(() -> new BookException(ErrorCode.BOOK_NOT_FOUND, "Book not found with ID: " + bookId));
 
-        String thumbnailUrl = book.getThumbnailUrl();
+        String thumbnailUrl = book.getThumbnailUrl(); // 기본적으로 기존 썸네일 유지
 
-        if(file != null && !file.isEmpty()) {
-            thumbnailUrl = s3Service.uploadFile(file);
-        }else {
-            thumbnailUrl = "/images/book-placeholder.png";
+        if (file != null) {
+            if (!file.isEmpty()) {
+                thumbnailUrl = s3Service.uploadFile(file);
+            } else {
+                thumbnailUrl = "/images/book-placeholder.png";
+            }
         }
 
         book.update(
