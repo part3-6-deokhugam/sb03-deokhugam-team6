@@ -1,6 +1,7 @@
 package com.part3.deokhugam.service;
 
 import com.part3.deokhugam.domain.Book;
+import com.part3.deokhugam.domain.BookMetrics;
 import com.part3.deokhugam.domain.PopularBook;
 import com.part3.deokhugam.domain.Review;
 import com.part3.deokhugam.domain.enums.Period;
@@ -64,11 +65,12 @@ public class BookService {
 
         if (hasNext) {
             Book lastBook = books.get(limit);
+            BookMetrics bookMetrics = lastBook.getBookMetrics();
             switch (orderBy) {
                 case "title" -> nextCursor = lastBook.getTitle();
                 case "publishedDate" -> nextCursor = lastBook.getPublishedDate().toString();
-                case "rating" -> nextCursor = lastBook.getRating().toString();
-                case "reviewCount" -> nextCursor = lastBook.getReviewCount().toString();
+                case "rating" -> nextCursor = bookMetrics.getAverageRating().toString();
+                case "reviewCount" -> nextCursor = bookMetrics.getReviewCount().toString();
             }
             nextAfter = bookDtos.get(bookDtos.size() - 1).createdAt();
         }
@@ -106,6 +108,14 @@ public class BookService {
                 .isbn(request.isbn())
                 .build();
 
+        BookMetrics metrics = BookMetrics.builder()
+            .book(book)
+            .reviewCount(0)
+            .averageRating(new BigDecimal("0.0"))
+            .build();
+
+        book.setBookMetrics(metrics);
+
         bookRepository.save(book);
 
         return new BookDto(
@@ -117,8 +127,8 @@ public class BookService {
                 book.getPublishedDate(),
                 book.getIsbn(),
                 thumbnailUrl,
-                book.getReviewCount(),
-                book.getRating(),
+                book.getBookMetrics().getReviewCount(),
+                book.getBookMetrics().getAverageRating(),
                 book.getCreatedAt(),
                 book.getUpdatedAt()
         );
@@ -227,9 +237,44 @@ public class BookService {
         LocalDate now = LocalDate.now();
         Instant start = null;
         Instant end = null;
-
         ZoneId UTC = ZoneOffset.UTC;
 
+        // ===== 1. ALL_TIME은 Book → BookMetrics 기반 =====
+        if (period == Period.ALL_TIME) {
+            List<Book> books = bookRepository.findAll();
+
+            List<PopularBook> allTimeRanking = books.stream()
+                .filter(book -> book.getBookMetrics() != null && book.getBookMetrics().getReviewCount() > 0)
+                .map(book -> {
+                    BookMetrics metrics = book.getBookMetrics();
+
+                    int reviewCount = metrics.getReviewCount();
+                    BigDecimal avgRating = metrics.getAverageRating();
+
+                    BigDecimal weightedCount = BigDecimal.valueOf(reviewCount).multiply(BigDecimal.valueOf(0.4));
+                    BigDecimal weightedRating = avgRating.multiply(BigDecimal.valueOf(0.6));
+                    BigDecimal score = weightedCount.add(weightedRating);
+
+                    return PopularBook.builder()
+                        .period(Period.ALL_TIME)
+                        .periodDate(now)
+                        .score(score)
+                        .reviewCount(reviewCount)
+                        .book(book)
+                        .build();
+                })
+                .sorted(Comparator.comparing(PopularBook::getScore).reversed())
+                .collect(Collectors.toList());
+
+            for (int i = 0; i < allTimeRanking.size(); i++) {
+                allTimeRanking.get(i).setRank(i + 1);
+            }
+
+            popularBookRepository.saveAll(allTimeRanking);
+            return;
+        }
+
+        // ===== 2. 기간 기반 랭킹 계산 (DAILY, WEEKLY, MONTHLY) =====
         switch (period) {
             case DAILY:
                 start = now.minusDays(1).atStartOfDay(UTC).toInstant();
@@ -243,46 +288,45 @@ public class BookService {
                 start = now.minusMonths(1).atStartOfDay(UTC).toInstant();
                 end = now.minusDays(1).atTime(LocalTime.MAX).atZone(UTC).toInstant();
                 break;
-            case ALL_TIME:
-                start = LocalDate.of(2025, 1, 1).atStartOfDay(UTC).toInstant();
-                end = now.minusDays(1).atTime(LocalTime.MAX).atZone(UTC).toInstant();
-                break;
+            default:
+                throw new IllegalArgumentException("Unsupported period: " + period);
         }
 
         List<Review> reviews = reviewRepository.findByCreatedAtBetweenAndDeletedFalse(start, end);
 
         Map<UUID, List<Review>> grouped = reviews.stream()
-                .collect(Collectors.groupingBy(r -> r.getBook().getId()));
+            .collect(Collectors.groupingBy(r -> r.getBook().getId()));
 
         List<PopularBook> rankingList = grouped.entrySet().stream()
-                .map(entry -> {
-                    UUID bookId = entry.getKey();
-                    List<Review> reviewList = entry.getValue();
+            .map(entry -> {
+                UUID bookId = entry.getKey();
+                List<Review> reviewList = entry.getValue();
 
-                    int reviewCount = reviewList.size();
+                int reviewCount = reviewList.size();
 
-                    BigDecimal avgRating = reviewList.stream()
-                            .map(Review::getRating)
-                            .reduce(BigDecimal.ZERO, BigDecimal::add)
-                            .divide(BigDecimal.valueOf(reviewCount), 2, RoundingMode.HALF_UP);
+                // Integer → BigDecimal 변환하여 평균 계산
+                BigDecimal avgRating = reviewList.stream()
+                    .map(r -> BigDecimal.valueOf(r.getRating()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add)
+                    .divide(BigDecimal.valueOf(reviewCount), 2, RoundingMode.HALF_UP);
 
-                    BigDecimal weightedCount = BigDecimal.valueOf(reviewCount).multiply(BigDecimal.valueOf(0.4));
-                    BigDecimal weightedRating = avgRating.multiply(BigDecimal.valueOf(0.6));
-                    BigDecimal score = weightedCount.add(weightedRating);
+                BigDecimal weightedCount = BigDecimal.valueOf(reviewCount).multiply(BigDecimal.valueOf(0.4));
+                BigDecimal weightedRating = avgRating.multiply(BigDecimal.valueOf(0.6));
+                BigDecimal score = weightedCount.add(weightedRating);
 
-                    Book book = bookRepository.findById(bookId)
-                            .orElseThrow(() -> new BookException(ErrorCode.BOOK_NOT_FOUND, "Book not found with ID: " + bookId));
+                Book book = bookRepository.findById(bookId)
+                    .orElseThrow(() -> new BookException(ErrorCode.BOOK_NOT_FOUND, "Book not found with ID: " + bookId));
 
-                    return PopularBook.builder()
-                            .period(period)
-                            .periodDate(now)
-                            .score(score)
-                            .reviewCount(reviewCount)
-                            .book(book)
-                            .build();
-                })
-                .sorted(Comparator.comparing(PopularBook::getScore).reversed())
-                .collect(Collectors.toList());
+                return PopularBook.builder()
+                    .period(period)
+                    .periodDate(now)
+                    .score(score)
+                    .reviewCount(reviewCount)
+                    .book(book)
+                    .build();
+            })
+            .sorted(Comparator.comparing(PopularBook::getScore).reversed())
+            .collect(Collectors.toList());
 
         for (int i = 0; i < rankingList.size(); i++) {
             rankingList.get(i).setRank(i + 1);
