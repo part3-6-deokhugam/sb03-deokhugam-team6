@@ -109,7 +109,6 @@ public class BookService {
                 .build();
 
         BookMetrics metrics = BookMetrics.builder()
-            .book(book)
             .reviewCount(0)
             .averageRating(new BigDecimal("0.0"))
             .build();
