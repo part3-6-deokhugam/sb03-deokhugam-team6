@@ -10,10 +10,19 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface CommentMapper {
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    @Mapping(source = "user",              target = "user")
+    @Mapping(source = "review",            target = "review")
+    @Mapping(source = "request.content",   target = "content")
     Comment toEntity(CommentCreateRequest request, User user, Review review);
 
-    @Mapping(source = "user.id" , target = "userId")
-    @Mapping(source = "review.id", target = "reviewId")
-    @Mapping(source = "user.nickname", target = "userNickname")
+    @Mapping(source = "id",                target = "id")
+    @Mapping(source = "user.id",           target = "userId")
+    @Mapping(source = "review.id",         target = "reviewId")
+    @Mapping(source = "user.nickname",     target = "userNickname")
+    @Mapping(source = "content",           target = "content")
+    @Mapping(source = "createdAt",         target = "createdAt")
+    @Mapping(source = "updatedAt",         target = "updatedAt")
     CommentDto toDto(Comment comment);
 }
