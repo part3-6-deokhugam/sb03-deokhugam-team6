@@ -14,7 +14,7 @@ public record PopularBookDto(
         String thumbnailUrl,
         Period period,
         Integer rank,
-        Double score,
+        BigDecimal score,
         Integer reviewCount,
         BigDecimal rating,
         Instant createdAt
