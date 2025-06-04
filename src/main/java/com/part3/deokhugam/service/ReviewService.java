@@ -27,6 +27,29 @@ public class ReviewService {
   private final ReviewMapper reviewMapper;
 
   @Transactional
+  public ReviewDto update(UUID reviewId, UUID userId, ReviewUpdateRequest request) {
+    Review review = reviewRepository.findById(reviewId)
+        .orElseThrow(
+            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId));
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "User ID: " + userId));
+
+    if (!review.getUser().getId().equals(userId)) {
+      throw new BusinessException(ErrorCode.FORBIDDEN,
+          "User ID: " + userId + ", Review ID: " + reviewId);
+    }
+
+    if (review.isDeleted()) {
+      throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId);
+    }
+
+    review.setContent(request.getContent());
+    review.setRating(request.getRating());
+
+    return reviewMapper.toDto(review);
+  }
+
+  @Transactional
   public void delete(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(
