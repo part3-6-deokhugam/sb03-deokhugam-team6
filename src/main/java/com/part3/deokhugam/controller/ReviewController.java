@@ -26,6 +26,14 @@ public class ReviewController {
 
   private final ReviewService reviewService;
 
+  @PatchMapping("/{reviewId}")
+  public ResponseEntity<ReviewDto> update(@PathVariable UUID reviewId,
+      @RequestHeader(value = "Deokhugam-Request-User-ID", required = true) UUID userId,
+      @RequestBody @Valid ReviewUpdateRequest request) {
+    ReviewDto reviewDto = reviewService.update(reviewId, userId, request);
+    return ResponseEntity.status(HttpStatus.OK).body(reviewDto);
+  }
+
   @DeleteMapping("/{reviewId}")
   public ResponseEntity<Void> delete(
       @PathVariable UUID reviewId,
