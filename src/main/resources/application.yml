@@ -34,5 +34,6 @@ springdoc:
 logging:
   level:
     root: INFO
-    org.springframework.web: WARN
+    org.springdoc: DEBUG
+    org.springframework.web: DEBUG
     com.part3.deokhugam: DEBUG
