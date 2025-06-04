@@ -23,7 +23,12 @@ public enum ErrorCode {
   EMAIL_DUPLICATION(HttpStatus.CONFLICT, "이미 존재하는 이메일입니다."),
 
   // 500 Internal Server Error
-  INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버에 오류가 발생했습니다.");
+  INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버에 오류가 발생했습니다."),
+
+
+  BOOK_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 책입니다."),
+  OCR_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "OCR 처리에 실패하였습니다."),
+  BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "책을 찾을 수 없습니다.");
 
   private final HttpStatus status;
   private final String message;
