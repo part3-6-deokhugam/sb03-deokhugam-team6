@@ -22,7 +22,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class BookMetrics {
 
   @Id
@@ -39,4 +38,11 @@ public class BookMetrics {
 
   @Column(name = "average_rating", nullable = false, precision = 2, scale = 1)
   private BigDecimal averageRating = new BigDecimal("0.0");
+
+  @Builder
+  public BookMetrics(Integer reviewCount, BigDecimal averageRating) {
+    this.reviewCount = reviewCount;
+    this.averageRating = averageRating;
+  }
+
 }
