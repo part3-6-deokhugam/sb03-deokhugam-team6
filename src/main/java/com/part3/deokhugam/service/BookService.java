@@ -211,9 +211,10 @@ public class BookService {
         String nextCursor = null;
         Instant nextAfter = null;
 
-        if (hasNext && !pagedBooks.isEmpty()) {
-            nextAfter = popularBookDtos.get(popularBookDtos.size() - 1).createdAt();
-            nextCursor = String.valueOf(cursor == null ? limit : Integer.parseInt(cursor) + limit);
+        if (hasNext) {
+            PopularBook lastPopularBook = popularBooks.get(limit);
+            nextCursor = String.valueOf(lastPopularBook.getRank());
+            nextAfter = lastPopularBook.getCreatedAt();
         }
 
         return new CursorPageResponsePopularBookDto(
