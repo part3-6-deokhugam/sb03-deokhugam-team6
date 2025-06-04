@@ -22,53 +22,61 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class CommentService {
-    private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
-    private final ReviewRepository reviewRepository;
-    private final CommentMapper commentMapper;
 
-    @Transactional
-    public CommentDto create(CommentCreateRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
-        Review review = reviewRepository.findById(request.getReviewId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
+  private final CommentRepository commentRepository;
+  private final UserRepository userRepository;
+  private final ReviewRepository reviewRepository;
+  private final CommentMapper commentMapper;
 
-        Comment comment = commentMapper.toEntity(request, user, review);
-        Comment savedComment = commentRepository.save(comment);
+  @Transactional
+  public CommentDto create(CommentCreateRequest request) {
+    User user = userRepository.findById(request.getUserId())
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
+    Review review = reviewRepository.findById(request.getReviewId())
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
 
-        return commentMapper.toDto(savedComment);
+    Comment comment = commentMapper.toEntity(request, user, review);
+    Comment savedComment = commentRepository.save(comment);
+
+    return commentMapper.toDto(savedComment);
+  }
+
+  @Transactional(readOnly = true)
+  public CommentDto findById(UUID commentId) {
+    Comment comment = commentRepository.findById(commentId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
+    return commentMapper.toDto(comment);
+  }
+
+  @Transactional
+  public CommentDto update(UUID commentId, UUID userId, CommentUpdateRequest request) {
+    Comment comment = commentRepository.findById(commentId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
+    if (!comment.getUser().getId().equals(userId)) {
+      throw new BusinessException(ErrorCode.FORBIDDEN);
     }
-  
-    @Transactional
-    public CommentDto update(UUID commentId, UUID userId, CommentUpdateRequest request) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
-        if (!comment.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN);
-        }
-        comment.update(request.getContent());
-        return commentMapper.toDto(comment);
+    comment.update(request.getContent());
+    return commentMapper.toDto(comment);
 
-    }
+  }
 
-    @Transactional
-    public void deleteLogically(UUID commentId, UUID userId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
-        if (!comment.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN);
-        }
-        comment.markAsDeleted();
+  @Transactional
+  public void deleteLogically(UUID commentId, UUID userId) {
+    Comment comment = commentRepository.findById(commentId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
+    if (!comment.getUser().getId().equals(userId)) {
+      throw new BusinessException(ErrorCode.FORBIDDEN);
     }
+    comment.markAsDeleted();
+  }
 
-    @Transactional
-    public void deletePhysically(UUID commentId, UUID userId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
-        if (!comment.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN);
-        }
-        commentRepository.delete(comment);
+  @Transactional
+  public void deletePhysically(UUID commentId, UUID userId) {
+    Comment comment = commentRepository.findById(commentId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
+    if (!comment.getUser().getId().equals(userId)) {
+      throw new BusinessException(ErrorCode.FORBIDDEN);
     }
+    commentRepository.delete(comment);
+  }
 }
