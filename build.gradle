@@ -34,6 +34,9 @@ dependencies {
     // Swagger 추가
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8'
 
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
     // MapStruct 추가
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
@@ -46,8 +49,6 @@ dependencies {
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.batch:spring-batch-test'
     runtimeOnly 'com.h2database:h2'
