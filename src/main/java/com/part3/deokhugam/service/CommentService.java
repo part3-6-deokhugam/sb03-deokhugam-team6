@@ -6,6 +6,8 @@ import com.part3.deokhugam.domain.User;
 import com.part3.deokhugam.dto.comment.CommentCreateRequest;
 import com.part3.deokhugam.dto.comment.CommentDto;
 import com.part3.deokhugam.dto.comment.CommentUpdateRequest;
+import com.part3.deokhugam.exception.BusinessException;
+import com.part3.deokhugam.exception.ErrorCode;
 import com.part3.deokhugam.mapper.CommentMapper;
 import com.part3.deokhugam.repository.CommentRepository;
 import com.part3.deokhugam.repository.ReviewRepository;
@@ -28,9 +30,9 @@ public class CommentService {
     @Transactional
     public CommentDto create(CommentCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User Not Found"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
         Review review = reviewRepository.findById(request.getReviewId())
-                .orElseThrow(() -> new RuntimeException("Review Not Found"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
 
         Comment comment = commentMapper.toEntity(request, user, review);
         Comment savedComment = commentRepository.save(comment);
@@ -41,9 +43,9 @@ public class CommentService {
     @Transactional
     public CommentDto update(UUID commentId, UUID userId, CommentUpdateRequest request) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment Not Found"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
         if (!comment.getUser().getId().equals(userId)) {
-            throw new RuntimeException("댓글 작성자가 아닙니다");
+            throw new BusinessException(ErrorCode.FORBIDDEN);
         }
         comment.update(request.getContent());
         return commentMapper.toDto(comment);
@@ -53,9 +55,9 @@ public class CommentService {
     @Transactional
     public void deleteLogically(UUID commentId, UUID userId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment Not Found"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
         if (!comment.getUser().getId().equals(userId)) {
-            throw new RuntimeException("삭제 권한이 없습니다");
+            throw new BusinessException(ErrorCode.FORBIDDEN);
         }
         comment.markAsDeleted();
     }
@@ -63,9 +65,9 @@ public class CommentService {
     @Transactional
     public void deletePhysically(UUID commentId, UUID userId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment Not Found"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
         if (!comment.getUser().getId().equals(userId)) {
-            throw new RuntimeException("삭제 권한이 없습니다");
+            throw new BusinessException(ErrorCode.FORBIDDEN);
         }
         commentRepository.delete(comment);
     }
