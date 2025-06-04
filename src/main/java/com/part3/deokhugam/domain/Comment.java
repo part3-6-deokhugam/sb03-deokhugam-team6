@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Entity
+@Table(name = "comments")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

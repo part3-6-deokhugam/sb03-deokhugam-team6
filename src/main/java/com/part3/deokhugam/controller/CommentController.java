@@ -4,6 +4,7 @@ import com.part3.deokhugam.api.CommentApi;
 import com.part3.deokhugam.dto.comment.CommentCreateRequest;
 import com.part3.deokhugam.dto.comment.CommentDto;
 import com.part3.deokhugam.dto.comment.CommentUpdateRequest;
+
 import com.part3.deokhugam.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -36,22 +38,22 @@ public class CommentController implements CommentApi {
         CommentDto updated = commentService.update(commentId, userId, request);
         return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
-
-    @DeleteMapping("/{commentId}")
+  
     @Override
+    @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteLogically(
             @PathVariable UUID commentId,
             @RequestHeader("Deokhugam-Request-User-ID") UUID userId) {
         commentService.deleteLogically(commentId, userId);
         return ResponseEntity.noContent().build();
     }
-
-    @DeleteMapping("/{commentId}/hard")
+  
     @Override
+    @DeleteMapping("/{commentId}/hard")
     public ResponseEntity<Void> deletePhysically(
             @PathVariable UUID commentId,
             @RequestHeader("Deokhugam-Request-User-ID") UUID userId) {
         commentService.deletePhysically(commentId, userId);
-        return ResponseEntity.noContent().build(); // 204
+        return ResponseEntity.noContent().build();
     }
 }
