@@ -1,8 +1,10 @@
 package com.part3.deokhugam.domain;
 
 import jakarta.persistence.*;
+import java.time.Instant;
 import lombok.*;
 import java.time.ZonedDateTime;
+import org.springframework.data.annotation.CreatedDate;
 
 @Entity
 @Table(name = "review_like")
@@ -26,8 +28,9 @@ public class ReviewLike {
   private User user;
 
   @Column(nullable = false)
-  private boolean liked = false;
+  private boolean liked;
 
-  @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMPTZ DEFAULT now()")
-  private ZonedDateTime createdAt = ZonedDateTime.now();
+  @CreatedDate
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private Instant createdAt;
 }

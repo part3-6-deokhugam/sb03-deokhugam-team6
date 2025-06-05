@@ -11,9 +11,11 @@ import com.part3.deokhugam.dto.review.ReviewLikeDto;
 import com.part3.deokhugam.dto.review.ReviewUpdateRequest;
 import com.part3.deokhugam.exception.BusinessException;
 import com.part3.deokhugam.exception.ErrorCode;
+import com.part3.deokhugam.mapper.ReviewLikeMapper;
 import com.part3.deokhugam.mapper.ReviewMapper;
 import com.part3.deokhugam.mapper.ReviewMetricsMapper;
 import com.part3.deokhugam.repository.BookRepository;
+import com.part3.deokhugam.repository.ReviewLikeRepository;
 import com.part3.deokhugam.repository.ReviewMetricsRepository;
 import com.part3.deokhugam.repository.ReviewRepository;
 import com.part3.deokhugam.repository.UserRepository;
@@ -29,10 +31,12 @@ public class ReviewService {
   private final ReviewRepository reviewRepository;
   private final UserRepository userRepository;
   private final BookRepository bookRepository;
+  private final ReviewLikeRepository reviewLikeRepository;
   private final ReviewMetricsRepository reviewMetricsRepository;
 
   private final ReviewMapper reviewMapper;
   private final ReviewMetricsMapper reviewMetricsMapper;
+  private final ReviewLikeMapper reviewLikeMapper;
 
   @Transactional
   public ReviewDto create(ReviewCreateRequest request) {
@@ -60,6 +64,27 @@ public class ReviewService {
   }
 
   @Transactional
+  public ReviewLikeDto like(UUID reviewId, UUID userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
+            "User ID: " + userId));
+    Review review = reviewRepository.findById(reviewId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
+            "review ID: " + reviewId));
+
+    ReviewLike reviewLike = reviewLikeRepository.findByReview_IdAndUser_Id(reviewId, userId)
+        .orElse(reviewLikeMapper.toReviewLike(user, review, false));
+
+    if(!reviewLike.isLiked()){
+      reviewLike.setLiked(true);
+      return reviewLikeMapper.toReviewLikeDto(userId, reviewId, true);
+    }
+
+    reviewLike.setLiked(false);
+    return reviewLikeMapper.toReviewLikeDto(userId, reviewId, false);
+  }
+
+  @Transactional
   public ReviewDto findById(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(
@@ -67,14 +92,14 @@ public class ReviewService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "User ID: " + userId));
 
-//    boolean likedByMe = false;
-//
-//    if (!review.getUser().getId().equals(userId)) {
-//
-//      return reviewMapper.toDto(review, likedByMe);
-//    }
-//
-//    likedByMe = true;
+    boolean likedByMe = false;
+
+    if (!review.getUser().getId().equals(userId)) {
+
+      return reviewMapper.toDto(review, likedByMe);
+    }
+
+    likedByMe = true;
     return reviewMapper.toDto(review, likedByMe);
   }
 

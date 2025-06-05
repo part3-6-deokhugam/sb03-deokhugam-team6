@@ -3,6 +3,7 @@ package com.part3.deokhugam.controller;
 import com.part3.deokhugam.domain.Review;
 import com.part3.deokhugam.dto.review.ReviewCreateRequest;
 import com.part3.deokhugam.dto.review.ReviewDto;
+import com.part3.deokhugam.dto.review.ReviewLikeDto;
 import com.part3.deokhugam.dto.review.ReviewUpdateRequest;
 import com.part3.deokhugam.service.ReviewService;
 import jakarta.validation.Valid;
@@ -31,6 +32,13 @@ public class ReviewController {
   public ResponseEntity<ReviewDto> create(@RequestBody @Valid ReviewCreateRequest request) {
     ReviewDto reviewDto = reviewService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(reviewDto);
+  }
+
+  @PostMapping("/{reviewId}/like")
+  public ResponseEntity<ReviewLikeDto> like(@PathVariable UUID reviewId,
+      @RequestHeader(value = "Deokhugam-Request-User-ID", required = true) UUID userId ){
+    ReviewLikeDto reviewLikeDto = reviewService.like(reviewId, userId);
+    return ResponseEntity.status(HttpStatus.OK).body(reviewLikeDto);
   }
 
   @GetMapping("/{reviewId}")

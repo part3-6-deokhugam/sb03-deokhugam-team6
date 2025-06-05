@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReviewRepository  extends JpaRepository<Review, UUID> {
   boolean existsByBookIdAndUserIdAndDeletedFalse(UUID bookId, UUID userId);
+  boolean existsByUserIdAndId(UUID userId, UUID reviewId);
 }
