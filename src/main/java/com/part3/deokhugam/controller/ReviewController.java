@@ -27,6 +27,12 @@ public class ReviewController {
 
   private final ReviewService reviewService;
 
+  @PostMapping
+  public ResponseEntity<ReviewDto> create(@RequestBody @Valid ReviewCreateRequest request) {
+    ReviewDto reviewDto = reviewService.create(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(reviewDto);
+  }
+
   @GetMapping("/{reviewId}")
   public ResponseEntity<ReviewDto> findById(@PathVariable UUID reviewId,
       @RequestHeader(value = "Deokhugam-Request-User-ID", required = true) UUID userId){
