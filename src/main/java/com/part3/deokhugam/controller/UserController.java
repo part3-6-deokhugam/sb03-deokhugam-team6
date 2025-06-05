@@ -1,6 +1,8 @@
 package com.part3.deokhugam.controller;
 
 import com.part3.deokhugam.api.UserApi;
+import com.part3.deokhugam.domain.enums.Period;
+import com.part3.deokhugam.dto.pagination.CursorPageResponseUserRankDataDto;
 import com.part3.deokhugam.dto.user.UserDto;
 import com.part3.deokhugam.dto.user.UserLoginRequest;
 import com.part3.deokhugam.dto.user.UserLoginResponse;
@@ -8,8 +10,11 @@ import com.part3.deokhugam.dto.user.UserRegisterRequest;
 import com.part3.deokhugam.dto.user.UserUpdateRequest;
 import com.part3.deokhugam.exception.BusinessException;
 import com.part3.deokhugam.exception.ErrorCode;
+import com.part3.deokhugam.service.UserRankDataService;
 import com.part3.deokhugam.service.UserService;
 import jakarta.validation.Valid;
+import java.time.Instant;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +30,7 @@ import java.util.UUID;
 public class UserController implements UserApi {
 
   private final UserService userService;
+  private final UserRankDataService userRankDataService;
 
   /**
    * 회원가입
@@ -96,5 +102,26 @@ public class UserController implements UserApi {
     }
 
     userService.delete(userId.toString());
+  }
+
+  @Override
+  public ResponseEntity<CursorPageResponseUserRankDataDto> getPowerUsers(
+      @RequestParam(name = "period", defaultValue = "DAILY") String period,
+      @RequestParam(name = "direction", defaultValue = "ASC") String direction,
+      @RequestParam(name = "cursor", required = false) String cursor,
+      @RequestParam(name = "after", required = false) Instant after,
+      @RequestParam(name = "limit", defaultValue = "50") int limit
+  ) {
+    // 1) period 문자열 → enum 으로 변환. 잘못된 값이라면 IllegalArgumentException 발생
+    Period enumPeriod = Period.valueOf(period);
+
+    // 2) periodDate 기본값: 오늘 날짜
+    LocalDate today = LocalDate.now();
+
+    // 3) 서비스 호출
+    CursorPageResponseUserRankDataDto dto =
+        userRankDataService.getPowerUsersCursor(enumPeriod, today, cursor, after, direction, limit);
+
+    return ResponseEntity.ok(dto);
   }
 }

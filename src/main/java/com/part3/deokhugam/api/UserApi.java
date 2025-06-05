@@ -1,5 +1,6 @@
 package com.part3.deokhugam.api;
 
+import com.part3.deokhugam.dto.pagination.CursorPageResponseUserRankDataDto;
 import com.part3.deokhugam.dto.user.UserDto;
 import com.part3.deokhugam.dto.user.UserLoginRequest;
 import com.part3.deokhugam.dto.user.UserLoginResponse;
@@ -13,6 +14,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
+import java.time.Instant;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -129,5 +132,37 @@ public interface UserApi {
   void delete(
       @PathVariable UUID userId,
       @RequestHeader("Deokhugam-Request-User-ID") UUID requesterId
+  );
+
+  @Operation(
+      summary = "파워 유저 목록 조회",
+      description = "기간별(DAILY, WEEKLY, MONTHLY, ALL_TIME) 파워 유저 랭킹을 커서 기반으로 조회합니다."
+  )
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "파워 유저 목록 조회 성공",
+          content = @Content(schema = @Schema(implementation = CursorPageResponseUserRankDataDto.class))),
+      @ApiResponse(responseCode = "400", description = "잘못된 요청 (랭킹 기간 오류, 정렬 방향 오류 등)",
+          content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+      @ApiResponse(responseCode = "500", description = "서버 내부 오류",
+          content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+  })
+  @GetMapping("/power")
+  ResponseEntity<CursorPageResponseUserRankDataDto> getPowerUsers(
+      @RequestParam(name = "period", defaultValue = "DAILY")
+      @Pattern(regexp = "DAILY|WEEKLY|MONTHLY|ALL_TIME", message = "period 값이 올바르지 않습니다.")
+      String period,
+
+      @RequestParam(name = "direction", defaultValue = "ASC")
+      @Schema(allowableValues = {"ASC", "DESC"})
+      String direction,
+
+      @RequestParam(name = "cursor", required = false)
+      String cursor,
+
+      @RequestParam(name = "after", required = false)
+      Instant after,
+
+      @RequestParam(name = "limit", defaultValue = "50")
+      int limit
   );
 }
