@@ -1,5 +1,6 @@
 package com.part3.deokhugam.domain;
 
+import com.part3.deokhugam.domain.enums.Period;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
@@ -15,7 +16,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -60,6 +60,10 @@ public class UserRankData extends BaseEntity {
   //기간 기준 날짜 (예: daily → 해당 날짜, weekly → 주의 시작일, monthly → 해당 월의 첫째 날)
   @Column(name = "period_date", nullable = false)
   private LocalDate periodDate;
+
+  //해당 기간 동안 리뷰 점수의 합계
+  @Column(name = "review_score_sum", nullable = false, precision = 19, scale = 4)
+  private BigDecimal reviewScoreSum;
 
   //활동 점수 → 평점 평균*0.6 + 리뷰 수*0.4 등의 방식으로 계산 (NUMERIC 타입)
   @Column(name = "score", nullable = false, precision = 19, scale = 4)
