@@ -8,7 +8,7 @@ import com.part3.deokhugam.dto.book.BookUpdateRequest;
 import com.part3.deokhugam.dto.book.NaverBookDto;
 import com.part3.deokhugam.dto.pagination.CursorPageResponseBookDto;
 import com.part3.deokhugam.dto.pagination.CursorPageResponsePopularBookDto;
-import com.part3.deokhugam.infra.naver.NaverBookClinet;
+import com.part3.deokhugam.infra.naver.NaverBookClient;
 import com.part3.deokhugam.service.BookService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BookController implements BookApi {
     private final BookService bookService;
-    private final NaverBookClinet naverBookClient;
+    private final NaverBookClient naverBookClient;
 
     @Override
     public ResponseEntity<CursorPageResponseBookDto> getBooks(
@@ -100,7 +100,7 @@ public class BookController implements BookApi {
     }
 
     @Override
-    @DeleteMapping("/physical/{bookId}")
+    @DeleteMapping("/{bookId}/hard")
     public ResponseEntity<Void> deleteBookPhysical(@PathVariable UUID bookId) {
         bookService.deleteBookPhysical(bookId);
         return ResponseEntity.noContent().build();
