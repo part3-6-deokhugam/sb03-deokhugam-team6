@@ -24,7 +24,7 @@ public class ReviewDto {
   private Integer rating;
   private Integer likeCount;
   private Integer commentCount;
-  private Boolean likedByMe;
+  private Boolean likedByMe = false;
   private Instant createdAt;
   private Instant updatedAt;
 

@@ -2,14 +2,19 @@ package com.part3.deokhugam.service;
 
 import com.part3.deokhugam.domain.Book;
 import com.part3.deokhugam.domain.Review;
+import com.part3.deokhugam.domain.ReviewLike;
+import com.part3.deokhugam.domain.ReviewMetrics;
 import com.part3.deokhugam.domain.User;
 import com.part3.deokhugam.dto.review.ReviewCreateRequest;
 import com.part3.deokhugam.dto.review.ReviewDto;
+import com.part3.deokhugam.dto.review.ReviewLikeDto;
 import com.part3.deokhugam.dto.review.ReviewUpdateRequest;
 import com.part3.deokhugam.exception.BusinessException;
 import com.part3.deokhugam.exception.ErrorCode;
 import com.part3.deokhugam.mapper.ReviewMapper;
+import com.part3.deokhugam.mapper.ReviewMetricsMapper;
 import com.part3.deokhugam.repository.BookRepository;
+import com.part3.deokhugam.repository.ReviewMetricsRepository;
 import com.part3.deokhugam.repository.ReviewRepository;
 import com.part3.deokhugam.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -24,7 +29,10 @@ public class ReviewService {
   private final ReviewRepository reviewRepository;
   private final UserRepository userRepository;
   private final BookRepository bookRepository;
+  private final ReviewMetricsRepository reviewMetricsRepository;
+
   private final ReviewMapper reviewMapper;
+  private final ReviewMetricsMapper reviewMetricsMapper;
 
   @Transactional
   public ReviewDto create(ReviewCreateRequest request) {
@@ -45,7 +53,10 @@ public class ReviewService {
     Review review = reviewMapper.toReview(request, user, book);
     Review savedReview = reviewRepository.save(review);
 
-    return reviewMapper.toDto(savedReview);
+    ReviewMetrics reviewMetrics = reviewMetricsMapper.toReviewMetrics(review);
+    ReviewMetrics savedReviewMetrics = reviewMetricsRepository.save(reviewMetrics);
+
+    return reviewMapper.toDto(savedReview, savedReviewMetrics);
   }
 
   @Transactional
@@ -56,11 +67,15 @@ public class ReviewService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "User ID: " + userId));
 
-    if (!review.getUser().getId().equals(userId)) {
-      throw new BusinessException(ErrorCode.FORBIDDEN,
-          "User ID: " + userId + ", Review ID: " + reviewId);
-    }
-    return reviewMapper.toDto(review);
+//    boolean likedByMe = false;
+//
+//    if (!review.getUser().getId().equals(userId)) {
+//
+//      return reviewMapper.toDto(review, likedByMe);
+//    }
+//
+//    likedByMe = true;
+    return reviewMapper.toDto(review, likedByMe);
   }
 
   @Transactional
