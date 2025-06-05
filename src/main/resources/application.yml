@@ -1,6 +1,8 @@
 spring:
   application:
     name: deokhugam
+  config:
+    import: optional:file:.env[.properties]  # .env import
   profiles:
     active: dev
 
@@ -37,3 +39,22 @@ logging:
     org.springdoc: DEBUG
     org.springframework.web: DEBUG
     com.part3.deokhugam: DEBUG
+
+ocr:
+  traineddata: ${TESSDATA_PREFIX}
+
+naver:
+  client-id: ${NAVER_CLIENT_ID}
+  client-secret: ${NAVER_SECRET_KEY}
+
+aws:
+  accessKeyId: ${AWS_S3_ACCESS_KEY}
+  secretKey: ${AWS_S3_SECRET_KEY}
+  region: ${AWS_S3_REGION}
+  s3:
+    bucket: ${AWS_S3_BUCKET}
+    base-url: ${AWS_S3_BASE_URL}
+
+scheduler:
+  batch:
+    start-time: "0 0 0 * * *"

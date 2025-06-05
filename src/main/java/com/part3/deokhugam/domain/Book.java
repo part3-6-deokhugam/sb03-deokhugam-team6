@@ -39,11 +39,8 @@ public class Book extends BaseEntity {
     @Column(length = 1000)
     private String thumbnailUrl;
 
-    @Column(nullable = false)
-    private Integer reviewCount = 0;
-
-    @Column(nullable = false, precision = 2, scale = 1)
-    private BigDecimal rating = new BigDecimal("0.0");
+    @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private BookMetrics bookMetrics;
 
     @Column(nullable = false)
     private boolean deleted = false;
@@ -73,5 +70,12 @@ public class Book extends BaseEntity {
 
     public void logicalDelete() {
         this.deleted = true;
+    }
+
+    public void setBookMetrics(BookMetrics metrics) {
+        if(metrics != null) {
+            metrics.setBook(this);
+            this.bookMetrics = metrics;
+        }
     }
 }
