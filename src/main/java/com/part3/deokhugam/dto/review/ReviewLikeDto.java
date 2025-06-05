@@ -16,5 +16,5 @@ import lombok.Setter;
 public class ReviewLikeDto {
   private UUID reviewId;
   private UUID userId;
-  private Boolean Liked;
+  private Boolean liked;
 }

@@ -3,7 +3,6 @@ package com.part3.deokhugam.repository;
 import com.part3.deokhugam.domain.Review;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.time.Instant;
 import java.util.List;
 
