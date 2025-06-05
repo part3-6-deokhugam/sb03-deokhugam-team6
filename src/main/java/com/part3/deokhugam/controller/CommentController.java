@@ -5,15 +5,16 @@ import com.part3.deokhugam.dto.comment.CommentCreateRequest;
 import com.part3.deokhugam.dto.comment.CommentDto;
 import com.part3.deokhugam.dto.comment.CommentUpdateRequest;
 
+import com.part3.deokhugam.dto.pagination.CursorPageResponseCommentDto;
 import com.part3.deokhugam.service.CommentService;
 import jakarta.validation.Valid;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
-
 
 @RestController
 @RequiredArgsConstructor
@@ -34,6 +35,19 @@ public class CommentController implements CommentApi {
   public ResponseEntity<CommentDto> findById(@PathVariable UUID commentId) {
     CommentDto commentDto = commentService.findById(commentId);
     return ResponseEntity.status(HttpStatus.OK).body(commentDto);
+  }
+
+  @Override
+  @GetMapping
+  public ResponseEntity<CursorPageResponseCommentDto> findAllByReviewId(
+      @RequestParam("reviewId") UUID reviewId,
+      @RequestParam(value = "direction", defaultValue = "DESC") String direction,
+      @RequestParam(value = "cursor", required = false) String cursor,
+      @RequestParam(value = "after", required = false) Instant after,
+      @RequestParam(value = "limit", defaultValue = "50") int limit) {
+    CursorPageResponseCommentDto response = commentService.findAll(reviewId, direction, cursor,
+        after, limit);
+    return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
   @Override
