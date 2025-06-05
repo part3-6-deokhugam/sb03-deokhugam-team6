@@ -13,4 +13,5 @@ public interface UserRankDataRepository extends JpaRepository<UserRankData, UUID
   List<UserRankData> findByPeriodAndPeriodDateOrderByRankAsc(
       Period period,
       LocalDate periodDate);
+  long countByPeriodAndPeriodDate(Period period, LocalDate periodDate);
 }
