@@ -117,20 +117,7 @@ public class BookService {
 
         bookRepository.save(book);
 
-        return new BookDto(
-                book.getId(),
-                book.getTitle(),
-                book.getAuthor(),
-                book.getDescription(),
-                book.getPublisher(),
-                book.getPublishedDate(),
-                book.getIsbn(),
-                thumbnailUrl,
-                book.getBookMetrics().getReviewCount(),
-                book.getBookMetrics().getAverageRating(),
-                book.getCreatedAt(),
-                book.getUpdatedAt()
-        );
+        return bookMapper.toDto(book);
     }
 
     public String ocrIsbn(MultipartFile image) throws IOException {
