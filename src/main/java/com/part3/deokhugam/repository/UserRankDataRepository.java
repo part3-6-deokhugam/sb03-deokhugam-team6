@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRankDataRepository extends JpaRepository<UserRankData, UUID> {
-  List<UserRankData> findByPeriodAndPeriodDateOrderByRankAsc(
-      Period period,
+  List<UserRankData> findByPeriodTypeAndPeriodDateOrderByRankAsc(
+      Period periodType,
       LocalDate periodDate);
-  long countByPeriodAndPeriodDate(Period period, LocalDate periodDate);
+  long countByPeriodTypeAndPeriodDate(Period period, LocalDate periodDate);
 }

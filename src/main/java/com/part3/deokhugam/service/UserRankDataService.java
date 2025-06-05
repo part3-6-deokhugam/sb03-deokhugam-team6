@@ -38,7 +38,7 @@ public class UserRankDataService {
 
     // (A) 1차: period + periodDate 에 해당하는 전체 List<UserRankData>를 가져온다.
     List<UserRankData> allEntities = userRankDataRepository
-        .findByPeriodAndPeriodDateOrderByRankAsc(period, periodDate);
+        .findByPeriodTypeAndPeriodDateOrderByRankAsc(period, periodDate);
 
     // (B) 2차: direction(ASC/DESC)에 맞게 정렬 순서를 변경
     List<UserRankData> sorted;
@@ -134,7 +134,7 @@ public class UserRankDataService {
     }
 
     // (H) 전체 Elements 수 조회 (카운트 쿼리)
-    long totalElements = userRankDataRepository.countByPeriodAndPeriodDate(period, periodDate);
+    long totalElements = userRankDataRepository.countByPeriodTypeAndPeriodDate(period, periodDate);
 
     return new CursorPageResponseUserRankDataDto(
         dtos,
