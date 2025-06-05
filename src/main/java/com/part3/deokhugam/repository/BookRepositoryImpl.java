@@ -87,13 +87,13 @@ public class BookRepositoryImpl implements BookRepositoryCustom {
                     BigDecimal rating = new BigDecimal(cursor);
                     if ("asc".equalsIgnoreCase(direction)) {
                         predicate.and(
-                                book.rating.gt(rating)
-                                        .or(book.rating.eq(rating).and(book.createdAt.gt(after)))
+                                book.bookMetrics.averageRating.gt(rating)
+                                        .or(book.bookMetrics.averageRating.eq(rating).and(book.createdAt.gt(after)))
                         );
                     } else {
                         predicate.and(
-                                book.rating.lt(rating)
-                                        .or(book.rating.eq(rating).and(book.createdAt.lt(after)))
+                            book.bookMetrics.averageRating.lt(rating)
+                                        .or(book.bookMetrics.averageRating.eq(rating).and(book.createdAt.lt(after)))
                         );
                     }
                 }
@@ -101,13 +101,13 @@ public class BookRepositoryImpl implements BookRepositoryCustom {
                     int reviewCount = Integer.parseInt(cursor);
                     if ("asc".equalsIgnoreCase(direction)) {
                         predicate.and(
-                                book.reviewCount.gt(reviewCount)
-                                        .or(book.reviewCount.eq(reviewCount).and(book.createdAt.gt(after)))
+                                book.bookMetrics.reviewCount.gt(reviewCount)
+                                        .or( book.bookMetrics.reviewCount.eq(reviewCount).and(book.createdAt.gt(after)))
                         );
                     } else {
                         predicate.and(
-                                book.reviewCount.lt(reviewCount)
-                                        .or(book.reviewCount.eq(reviewCount).and(book.createdAt.lt(after)))
+                            book.bookMetrics.reviewCount.lt(reviewCount)
+                                        .or(book.bookMetrics.reviewCount.eq(reviewCount).and(book.createdAt.lt(after)))
                         );
                     }
                 }
@@ -123,8 +123,8 @@ public class BookRepositoryImpl implements BookRepositoryCustom {
         switch (orderBy) {
             case "title" -> primaryOrder = "asc".equalsIgnoreCase(direction) ? book.title.asc() : book.title.desc();
             case "publishedDate" -> primaryOrder = "asc".equalsIgnoreCase(direction) ? book.publishedDate.asc() : book.publishedDate.desc();
-            case "rating" -> primaryOrder = "asc".equalsIgnoreCase(direction) ? book.rating.asc() : book.rating.desc();
-            case "reviewCount" -> primaryOrder = "asc".equalsIgnoreCase(direction) ? book.reviewCount.asc() : book.reviewCount.desc();
+            case "rating" -> primaryOrder = "asc".equalsIgnoreCase(direction) ? book.bookMetrics.averageRating.asc() : book.bookMetrics.averageRating.desc();
+            case "reviewCount" -> primaryOrder = "asc".equalsIgnoreCase(direction) ? book.bookMetrics.reviewCount.asc() : book.bookMetrics.reviewCount.desc();
             default -> throw new IllegalArgumentException("정렬 기준이 잘못되었습니다: " + orderBy);
         }
 
