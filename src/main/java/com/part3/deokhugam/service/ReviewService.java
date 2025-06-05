@@ -103,6 +103,21 @@ public class ReviewService {
   }
 
   @Transactional
+  public ReviewDto findById(UUID reviewId, UUID userId) {
+    Review review = reviewRepository.findById(reviewId)
+        .orElseThrow(
+            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId));
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "User ID: " + userId));
+
+    if (!review.getUser().getId().equals(userId)) {
+      throw new BusinessException(ErrorCode.FORBIDDEN,
+          "User ID: " + userId + ", Review ID: " + reviewId);
+    }
+    return reviewMapper.toDto(review);
+  }
+
+  @Transactional
   public ReviewDto update(UUID reviewId, UUID userId, ReviewUpdateRequest request) {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(
