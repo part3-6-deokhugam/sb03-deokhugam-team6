@@ -25,6 +25,13 @@ public interface ReviewMapper {
   @Mapping(target = "updatedAt", source = "review.updatedAt")
   ReviewDto toDto(Review review, ReviewMetrics reviewMetrics);
 
-  ReviewDto toDto(Review review, Boolean likedByMe);
+  @Mapping(target = "bookId", source = "book.id")
+  @Mapping(target = "bookTitle", source = "book.title")
+  @Mapping(target = "bookThumbnailUrl", source = "book.thumbnailUrl")
+  @Mapping(target = "userId", source = "user.id")
+  @Mapping(target = "userNickname", source = "user.nickname")
+  @Mapping(target = "createdAt", source = "review.createdAt")
+  @Mapping(target = "updatedAt", source = "review.updatedAt")
+  ReviewDto toDto(Review review, ReviewMetrics reviewMetrics, Boolean likedByMe);
 
 }

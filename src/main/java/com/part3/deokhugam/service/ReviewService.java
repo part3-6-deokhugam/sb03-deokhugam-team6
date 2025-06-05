@@ -3,6 +3,7 @@ package com.part3.deokhugam.service;
 import com.part3.deokhugam.domain.Book;
 import com.part3.deokhugam.domain.Review;
 import com.part3.deokhugam.domain.ReviewLike;
+import com.part3.deokhugam.domain.ReviewLikeId;
 import com.part3.deokhugam.domain.ReviewMetrics;
 import com.part3.deokhugam.domain.User;
 import com.part3.deokhugam.dto.review.ReviewCreateRequest;
@@ -91,16 +92,13 @@ public class ReviewService {
             () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId));
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "User ID: " + userId));
+    ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(reviewId)
+        .orElseThrow(
+            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "ReviewMetrics ID: " + reviewId));
 
-    boolean likedByMe = false;
+    boolean likedByMe = isLikedByMe(reviewId, userId);
 
-    if (!review.getUser().getId().equals(userId)) {
-
-      return reviewMapper.toDto(review, likedByMe);
-    }
-
-    likedByMe = true;
-    return reviewMapper.toDto(review, likedByMe);
+    return reviewMapper.toDto(review, reviewMetrics, likedByMe);
   }
 
   @Transactional
@@ -148,5 +146,11 @@ public class ReviewService {
           "User ID: " + userId + ", Review ID: " + reviewId);
     }
     reviewRepository.delete(review);
+  }
+
+  public boolean isLikedByMe(UUID reviewId, UUID userId) {
+    return reviewLikeRepository.findById(new ReviewLikeId(reviewId, userId))
+        .map(ReviewLike::isLiked)
+        .orElse(false);
   }
 }
