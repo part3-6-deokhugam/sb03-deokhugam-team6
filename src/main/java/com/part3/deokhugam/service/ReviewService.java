@@ -91,7 +91,8 @@ public class ReviewService {
         .orElseThrow(
             () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId));
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "User ID: " + userId));
+        .orElseThrow(
+            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "User ID: " + userId));
     ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(reviewId)
         .orElseThrow(
             () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "ReviewMetrics ID: " + reviewId));
@@ -107,21 +108,26 @@ public class ReviewService {
         .orElseThrow(
             () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId));
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "User ID: " + userId));
+        .orElseThrow(
+            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "User ID: " + userId));
+    ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(reviewId)
+        .orElseThrow(
+            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "ReviewMetrics ID: " + reviewId));
 
     if (!review.getUser().getId().equals(userId)) {
       throw new BusinessException(ErrorCode.FORBIDDEN,
           "User ID: " + userId + ", Review ID: " + reviewId);
     }
-
     if (review.isDeleted()) {
       throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId);
     }
 
+    boolean likedByMe = isLikedByMe(reviewId, userId);
+
     review.setContent(request.getContent());
     review.setRating(request.getRating());
 
-    return reviewMapper.toDto(review);
+    return reviewMapper.toDto(review, reviewMetrics, likedByMe);
   }
 
   @Transactional
