@@ -8,6 +8,7 @@ import com.part3.deokhugam.dto.user.UserRegisterRequest;
 import com.part3.deokhugam.dto.user.UserUpdateRequest;
 import com.part3.deokhugam.exception.BusinessException;
 import com.part3.deokhugam.exception.ErrorCode;
+import com.part3.deokhugam.mapper.UserMapper;
 import com.part3.deokhugam.repository.UserRepository;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class UserService {
 
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
+  private final UserMapper userMapper;
 
   //회원가입
   @Transactional
@@ -37,11 +39,8 @@ public class UserService {
         });
 
     // DTO -> Entity 매핑
-    User user = User.builder()
-        .email(req.getEmail())
-        .password(passwordEncoder.encode(req.getPassword()))
-        .nickname(req.getNickname())
-        .build();
+    User user = userMapper.toEntity(req);
+    user.setPassword(passwordEncoder.encode(req.getPassword()));
 
     try {
       User saved = userRepository.save(user);
@@ -99,7 +98,7 @@ public class UserService {
             "userId: " + userId
         ));
 
-    return UserDto.fromEntity(user);
+    return userMapper.toDto(user);
   }
 
   //닉네임 수정
@@ -113,9 +112,9 @@ public class UserService {
             "사용자를 찾을 수 없습니다: " + userId
         ));
 
-    user.updateNickname(req.getNickname());
+    userMapper.updateFromDto(req, user);
     User updated = userRepository.save(user);
-    return UserDto.fromEntity(updated);
+    return userMapper.toDto(updated);
   }
 
   //논리삭제
