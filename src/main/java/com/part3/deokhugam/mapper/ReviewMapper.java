@@ -12,24 +12,26 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface ReviewMapper {
-
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "deleted", ignore = true)
+  @Mapping(target = "rating", source = "request.rating")
   Review toReview(ReviewCreateRequest request, User user, Book book);
 
-  @Mapping(target = "bookId", source = "book.id")
-  @Mapping(target = "bookTitle", source = "book.title")
-  @Mapping(target = "bookThumbnailUrl", source = "book.thumbnailUrl")
-  @Mapping(target = "userId", source = "user.id")
-  @Mapping(target = "userNickname", source = "user.nickname")
+  @Mapping(target = "bookId", source = "review.book.id")
+  @Mapping(target = "bookTitle", source = "review.book.title")
+  @Mapping(target = "bookThumbnailUrl", source = "review.book.thumbnailUrl")
+  @Mapping(target = "userId", source = "review.user.id")
+  @Mapping(target = "userNickname", source = "review.user.nickname")
   @Mapping(target = "likedByMe", ignore = true)
   @Mapping(target = "createdAt", source = "review.createdAt")
   @Mapping(target = "updatedAt", source = "review.updatedAt")
   ReviewDto toDto(Review review, ReviewMetrics reviewMetrics);
 
-  @Mapping(target = "bookId", source = "book.id")
-  @Mapping(target = "bookTitle", source = "book.title")
-  @Mapping(target = "bookThumbnailUrl", source = "book.thumbnailUrl")
-  @Mapping(target = "userId", source = "user.id")
-  @Mapping(target = "userNickname", source = "user.nickname")
+  @Mapping(target = "bookId", source = "review.book.id")
+  @Mapping(target = "bookTitle", source = "review.book.title")
+  @Mapping(target = "bookThumbnailUrl", source = "review.book.thumbnailUrl")
+  @Mapping(target = "userId", source = "review.user.id")
+  @Mapping(target = "userNickname", source = "review.user.nickname")
   @Mapping(target = "createdAt", source = "review.createdAt")
   @Mapping(target = "updatedAt", source = "review.updatedAt")
   ReviewDto toDto(Review review, ReviewMetrics reviewMetrics, Boolean likedByMe);

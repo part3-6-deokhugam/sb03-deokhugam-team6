@@ -49,6 +49,7 @@ public class Review extends BaseEntity {
   private int rating;
 
   @Column(nullable = false)
+  @Builder.Default
   private boolean deleted = false;
 
 //  @OneToOne(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
