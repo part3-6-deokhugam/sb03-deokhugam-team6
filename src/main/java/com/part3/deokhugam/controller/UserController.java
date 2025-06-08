@@ -120,7 +120,7 @@ public class UserController implements UserApi {
 
     // 3) 서비스 호출
     CursorPageResponseUserRankDataDto dto =
-        userRankDataService.getPowerUsersCursor(enumPeriod, today, cursor, after, direction, limit);
+        userRankDataService.getPowerUsersCursor(enumPeriod, today, direction, cursor, after, limit);
 
     return ResponseEntity.ok(dto);
   }

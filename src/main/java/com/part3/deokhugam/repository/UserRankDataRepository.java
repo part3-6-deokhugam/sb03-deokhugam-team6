@@ -9,9 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRankDataRepository extends JpaRepository<UserRankData, UUID> {
-  List<UserRankData> findByPeriodTypeAndPeriodDateOrderByRankAsc(
-      Period periodType,
-      LocalDate periodDate);
-  long countByPeriodTypeAndPeriodDate(Period period, LocalDate periodDate);
+public interface UserRankDataRepository extends JpaRepository<UserRankData, UUID>, UserRankDataRepositoryCustom {
 }

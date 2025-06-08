@@ -1,5 +1,6 @@
 package com.part3.deokhugam.dto.user;
 
+import com.part3.deokhugam.domain.UserRankData;
 import com.part3.deokhugam.domain.enums.Period;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -21,4 +22,19 @@ public class UserRankDataDto {
   private LocalDate periodDate;
   private Integer likeCount;
   private Integer commentCount;
+
+  public static UserRankDataDto fromEntity(UserRankData e) {
+    return new UserRankDataDto(
+        e.getUser().getId(),
+        e.getUser().getNickname(),
+        e.getPeriodType(),
+        e.getCreatedAt(),
+        e.getRank(),
+        e.getScore(),
+        e.getReviewScoreSum(),
+        e.getPeriodDate(),
+        e.getLikeCount(),
+        e.getCommentCount()
+    );
+  }
 }
