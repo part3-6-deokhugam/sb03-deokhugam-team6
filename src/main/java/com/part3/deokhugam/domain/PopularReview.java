@@ -39,7 +39,7 @@ import lombok.Builder;
     private Review review;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "period_type", nullable = false, columnDefinition = "period_type")
+    @Column(name = "period_type", nullable = false)
     private Period periodType;
 
     @Column(name = "period_date", nullable = false)
