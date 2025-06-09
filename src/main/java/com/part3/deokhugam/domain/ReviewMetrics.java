@@ -33,8 +33,9 @@ public class ReviewMetrics extends BaseEntity {
   private Review review;
 
   @Column(name = "like_count", nullable = false)
-  private int likeCount;
+  private int likeCount = 0;
 
   @Column(name = "comment_count", nullable = false)
-  private int commentCount;
+  private int commentCount= 0;
+
 }
