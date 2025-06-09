@@ -10,13 +10,13 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
 import java.util.UUID;
-
+@Tag(name = "알림 관리", description = "알림 관련 API")
 @RequestMapping("/api/notifications")
 public interface NotificationApi {
 
@@ -90,5 +90,26 @@ public interface NotificationApi {
       @PathVariable("notificationId") UUID notificationId,
       @RequestHeader("Deokhugam-Request-User-ID") UUID userId,
       @Valid @RequestBody NotificationUpdateRequest req
+  );
+
+  @Operation(
+      summary = "모든 알림 읽음 처리",
+      parameters = {
+          @Parameter(name="Deokhugam-Request-User-ID",
+              in=ParameterIn.HEADER,
+              required=true,
+              description="요청자 ID",
+              schema=@Schema(type="string", format="uuid"))
+      },
+      responses = {
+          @ApiResponse(responseCode="204", description="알림 읽음 처리 성공"),
+          @ApiResponse(responseCode="400", description="잘못된 요청 (사용자 ID 누락)", content=@Content),
+          @ApiResponse(responseCode="404", description="사용자 정보 없음",      content=@Content),
+          @ApiResponse(responseCode="500", description="서버 내부 오류",      content=@Content)
+      }
+  )
+  @PatchMapping("/read-all")
+  ResponseEntity<Void> patchReadAll(
+      @RequestHeader("Deokhugam-Request-User-ID") UUID userId
   );
 }

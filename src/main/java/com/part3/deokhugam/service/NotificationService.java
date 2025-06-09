@@ -51,11 +51,14 @@ public class NotificationService {
 
     List<Notification> raw;
     if (afterInstant != null) {
-      // 새 알림 확인용 (오름차순)
-      raw = repo.findByUserIdAndCreatedAtAfter(userId, afterInstant, pg);
+      // 새 알림 조회(오름차순)
+      raw = repo.findByUserIdAndCreatedAtAfterOrderByCreatedAtAsc(userId, afterInstant, pg);
+    } else if (cursorInstant != null) {
+      // 커서 기반 페이지네이션(내림차순)
+      raw = repo.findByUserIdAndCreatedAtBeforeOrderByCreatedAtDesc(userId, cursorInstant, pg);
     } else {
-      // 기본/과거 페이지네이션
-      raw = repo.findByUserIdAndCreatedAtBefore(userId, cursorInstant, pg);
+      // 첫 페이지(내림차순)
+      raw = repo.findByUserIdOrderByCreatedAtDesc(userId, pg);
     }
 
     boolean hasNext = raw.size() > pageSize;
@@ -108,5 +111,17 @@ public class NotificationService {
     } catch (Exception e) {
       throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
     }
+  }
+
+  @Transactional
+  public void markAllRead(UUID userId) {
+    // 1) 아직 읽지 않은 알림만 조회
+    List<Notification> unread = repo.findByUserIdAndConfirmedFalse(userId);
+
+    // 2) 모두 confirmed=true 로 변경
+    unread.forEach(n -> n.setConfirmed(true));
+
+    // 3) 변경사항 저장
+    repo.saveAll(unread);
   }
 }
