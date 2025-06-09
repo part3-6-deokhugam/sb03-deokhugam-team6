@@ -10,7 +10,10 @@ import java.util.List;
 @Getter
 @Builder
 public class CursorPageResponseNotificationDto {
-  private List<NotificationDto> data;
-  private boolean hasNext;
-  private Instant nextCursor;   // 다음 페이지를 불러올 커서(=마지막 항목의 createdAt)
+  private List<NotificationDto> content;    // 알림들
+  private boolean hasNext;                  // 다음 페이지 존재 여부
+  private Instant nextCursor;               // 다음 페이지 조회용 커서(createdAt)
+  private Instant nextAfter;                // 새 알림 확인용 보조 커서(createdAt)
+  private int size;                         // 요청한 페이지 크기
+  private long totalElements;               // 전체 알림 개수
 }
