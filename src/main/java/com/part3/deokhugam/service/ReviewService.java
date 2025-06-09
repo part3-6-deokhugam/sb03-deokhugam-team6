@@ -103,6 +103,28 @@ public class ReviewService {
   }
 
   @Transactional
+  public ReviewDto create(ReviewCreateRequest request) {
+    User user = userRepository.findById(request.getUserId())
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
+            "User ID: " + request.getUserId()));
+    Book book = bookRepository.findById(request.getBookId())
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
+            "Book ID: " + request.getBookId()));
+
+    boolean exists = reviewRepository.existsByBookIdAndUserIdAndDeletedFalse(book.getId(),
+        user.getId());
+    if (exists) {
+      throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE,
+          "User ID: " + request.getUserId() + ", Book ID: " + request.getBookId());
+    }
+
+    Review review = reviewMapper.toReview(request, user, book);
+    Review savedReview = reviewRepository.save(review);
+
+    return reviewMapper.toDto(savedReview);
+  }
+
+  @Transactional
   public ReviewDto findById(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(
