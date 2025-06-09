@@ -31,6 +31,7 @@ public class Notification extends BaseEntity {
   @Column(name = "content", nullable = false)
   private String content;
 
+  @Builder.Default
   @Column(name = "confirmed", nullable = false)
   private boolean confirmed = false;
 

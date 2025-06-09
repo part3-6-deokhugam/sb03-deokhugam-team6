@@ -31,7 +31,7 @@ public class NotificationService {
   public NotificationDto updateConfirmed(UUID id, NotificationUpdateRequest req) {
     Notification n = repo.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("알림이 없습니다"));
-    mapper.updateFromRequest(req, n);
+    n.setConfirmed(req.isConfirmed());
     return mapper.toDto(n);
   }
 }

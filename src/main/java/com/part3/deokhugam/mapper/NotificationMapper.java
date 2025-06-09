@@ -11,7 +11,7 @@ import org.mapstruct.MappingTarget;
 public interface NotificationMapper {
 
   // Entity → DTO 변환, review.title → reviewTitle
-  @Mapping(target = "reviewTitle", source = "review.title")
+  @Mapping(target = "reviewTitle", source = "review.book.title")
   NotificationDto toDto(Notification notification);
 
   // UpdateRequest → Entity (confirmed 필드만 덮어쓰기)
