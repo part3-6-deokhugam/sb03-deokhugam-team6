@@ -1,12 +1,15 @@
 package com.part3.deokhugam.controller;
 
 import com.part3.deokhugam.domain.Review;
+import com.part3.deokhugam.dto.pagination.CursorPageResponseBookDto;
+import com.part3.deokhugam.dto.pagination.CursorPageResponseReviewDto;
 import com.part3.deokhugam.dto.review.ReviewCreateRequest;
 import com.part3.deokhugam.dto.review.ReviewDto;
 import com.part3.deokhugam.dto.review.ReviewLikeDto;
 import com.part3.deokhugam.dto.review.ReviewUpdateRequest;
 import com.part3.deokhugam.service.ReviewService;
 import jakarta.validation.Valid;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,6 +31,23 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReviewController {
 
   private final ReviewService reviewService;
+
+  @GetMapping
+  public ResponseEntity<CursorPageResponseReviewDto> getReviews(
+      @RequestParam(required = false) UUID userId,
+      @RequestParam(required = false) UUID bookId,
+      @RequestParam(value = "keyword", required = false) String keyword,
+      @RequestParam(value = "orderBy", defaultValue = "createdAt", required = false) String orderBy,
+      @RequestParam(value = "direction", defaultValue = "DESC", required = false) String direction,
+      @RequestParam(value = "cursor", required = false) String cursor,
+      @RequestParam(value = "after", required = false) Instant after,
+      @RequestParam(value = "limit", defaultValue = "50", required = false) int limit,
+      @RequestParam(value = "requestUserId", required = true) UUID requestUserId,
+      @RequestHeader(value = "Deokhugam-Request-User-ID", required = true) UUID requestUserHeaderId
+  ){
+    CursorPageResponseReviewDto dto = reviewService.getReviews();
+    return ResponseEntity.status(HttpStatus.OK).body(dto);
+  }
 
   @PostMapping
   public ResponseEntity<ReviewDto> create(@RequestBody @Valid ReviewCreateRequest request) {
@@ -45,7 +66,7 @@ public class ReviewController {
   public ResponseEntity<ReviewDto> findById(@PathVariable UUID reviewId,
       @RequestHeader(value = "Deokhugam-Request-User-ID", required = true) UUID userId){
     ReviewDto reviewDto = reviewService.findById(reviewId, userId);
-    return ResponseEntity.ok(reviewDto);
+    return ResponseEntity.status(HttpStatus.OK).body(reviewDto);
   }
 
   @PatchMapping("/{reviewId}")
