@@ -27,6 +27,43 @@ public class ReviewService {
   private final ReviewMapper reviewMapper;
 
   @Transactional
+  public ReviewDto create(ReviewCreateRequest request) {
+    User user = userRepository.findById(request.getUserId())
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
+            "User ID: " + request.getUserId()));
+    Book book = bookRepository.findById(request.getBookId())
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
+            "Book ID: " + request.getBookId()));
+
+    boolean exists = reviewRepository.existsByBookIdAndUserIdAndDeletedFalse(book.getId(),
+        user.getId());
+    if (exists) {
+      throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE,
+          "User ID: " + request.getUserId() + ", Book ID: " + request.getBookId());
+    }
+
+    Review review = reviewMapper.toReview(request, user, book);
+    Review savedReview = reviewRepository.save(review);
+
+    return reviewMapper.toDto(savedReview);
+  }
+
+  @Transactional
+  public ReviewDto findById(UUID reviewId, UUID userId) {
+    Review review = reviewRepository.findById(reviewId)
+        .orElseThrow(
+            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId));
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "User ID: " + userId));
+
+    if (!review.getUser().getId().equals(userId)) {
+      throw new BusinessException(ErrorCode.FORBIDDEN,
+          "User ID: " + userId + ", Review ID: " + reviewId);
+    }
+    return reviewMapper.toDto(review);
+  }
+
+  @Transactional
   public ReviewDto update(UUID reviewId, UUID userId, ReviewUpdateRequest request) {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(
