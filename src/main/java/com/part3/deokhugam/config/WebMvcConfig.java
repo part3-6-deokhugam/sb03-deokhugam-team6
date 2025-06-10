@@ -22,6 +22,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     // 필요한 경우 CORS 설정 (예: 프론트엔드 호출 허용)
     registry.addMapping("/**")
         .allowedOrigins("*")
+        .allowedHeaders("*")
         .allowedMethods("*");
   }
 }

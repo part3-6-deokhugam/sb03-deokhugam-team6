@@ -11,7 +11,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -53,18 +52,18 @@ public class Review extends BaseEntity {
   @Builder.Default
   private boolean deleted = false;
 
-//  @OneToOne(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-//  private ReviewMetrics metrics;
-//
-//  @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-//  private List<Comment> comments = new ArrayList<>();
-//
-//  @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-//  private Set<ReviewLike> likes = new HashSet<>();
-//
-//  @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-//  private List<Notification> notifications = new ArrayList<>();
-//
-//  @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-//  private List<PopularReview> popularReviews = new ArrayList<>();
+  @OneToOne(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+  private ReviewMetrics metrics;
+
+  @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Comment> comments = new ArrayList<>();
+
+  @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+  private Set<ReviewLike> likes = new HashSet<>();
+
+  @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Notification> notifications = new ArrayList<>();
+
+  @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<PopularReview> popularReviews = new ArrayList<>();
 }

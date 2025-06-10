@@ -24,6 +24,7 @@ public class ReviewDto {
   private Integer rating;
   private Integer likeCount;
   private Integer commentCount;
+  @Builder.Default
   private Boolean likedByMe = false;
   private Instant createdAt;
   private Instant updatedAt;
