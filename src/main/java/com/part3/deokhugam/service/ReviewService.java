@@ -105,11 +105,14 @@ public class ReviewService {
     }
 
     Review review = reviewMapper.toReview(request, user, book);
-    Review savedReview = reviewRepository.save(review);
+    ReviewMetrics metrics = reviewMetricsMapper.toReviewMetrics(review);
+    review.setMetrics(metrics);
 
-    ReviewMetrics reviewMetrics = reviewMetricsRepository.save(reviewMetricsMapper.toReviewMetrics(savedReview));
+    Review savedReview = reviewRepository.save(review); // metrics도 같이 저장됨
 
-    return reviewMapper.toDto(savedReview, reviewMetrics);
+    ReviewMetrics savedMetrics = reviewMetricsRepository.save(metrics);
+
+    return reviewMapper.toDto(savedReview, savedMetrics);
   }
 
   @Transactional
@@ -138,9 +141,6 @@ public class ReviewService {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(
             () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId));
-    User user = userRepository.findById(userId)
-        .orElseThrow(
-            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "User ID: " + userId));
     ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(reviewId)
         .orElseThrow(
             () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "ReviewMetrics ID: " + reviewId));
