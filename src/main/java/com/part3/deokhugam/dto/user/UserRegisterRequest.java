@@ -16,16 +16,18 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class UserRegisterRequest {
+
   @Email
   @NotBlank
   private String email;
 
+  @NotBlank @Size(min = 2, max = 20)
+  private String nickname;
+
+  @NotBlank
   @Pattern(
       regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$",
       message = "비밀번호는 영문, 숫자, 특수문자를 포함한 8-20자여야 합니다."
   )
   private String password;
-
-  @NotBlank @Size(min = 2, max = 20)
-  private String nickname;
 }
