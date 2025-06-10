@@ -53,4 +53,6 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
   // (optional) 아직 읽지 않은 알림 조회용
   List<Notification> findByUserIdAndConfirmedFalse(UUID userId);
 
+  // 일주일 보다 오래된 확인된 알림은 자동으로 삭제
+  void deleteByConfirmedTrueAndUpdatedAtBefore(Instant cutoff);
 }
