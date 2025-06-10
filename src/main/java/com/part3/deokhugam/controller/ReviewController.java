@@ -1,15 +1,13 @@
 package com.part3.deokhugam.controller;
 
-import com.part3.deokhugam.domain.Review;
-import com.part3.deokhugam.dto.pagination.CursorPageResponseBookDto;
 import com.part3.deokhugam.dto.pagination.CursorPageResponseReviewDto;
 import com.part3.deokhugam.dto.review.ReviewCreateRequest;
 import com.part3.deokhugam.dto.review.ReviewDto;
 import com.part3.deokhugam.dto.review.ReviewLikeDto;
+import com.part3.deokhugam.dto.review.ReviewSearchCondition;
 import com.part3.deokhugam.dto.review.ReviewUpdateRequest;
 import com.part3.deokhugam.service.ReviewService;
 import jakarta.validation.Valid;
-import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,7 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -34,18 +31,10 @@ public class ReviewController {
 
   @GetMapping
   public ResponseEntity<CursorPageResponseReviewDto> getReviews(
-      @RequestParam(required = false) UUID userId,
-      @RequestParam(required = false) UUID bookId,
-      @RequestParam(value = "keyword", required = false) String keyword,
-      @RequestParam(value = "orderBy", defaultValue = "createdAt", required = false) String orderBy,
-      @RequestParam(value = "direction", defaultValue = "DESC", required = false) String direction,
-      @RequestParam(value = "cursor", required = false) String cursor,
-      @RequestParam(value = "after", required = false) Instant after,
-      @RequestParam(value = "limit", defaultValue = "50", required = false) int limit,
-      @RequestParam(value = "requestUserId", required = true) UUID requestUserId,
-      @RequestHeader(value = "Deokhugam-Request-User-ID", required = true) UUID requestUserHeaderId
+      ReviewSearchCondition condition,
+      @RequestHeader(value = "Deokhugam-Request-User-ID") UUID requestUserHeaderId
   ){
-    CursorPageResponseReviewDto dto = reviewService.getReviews();
+    CursorPageResponseReviewDto dto = reviewService.findAll(condition, requestUserHeaderId);
     return ResponseEntity.status(HttpStatus.OK).body(dto);
   }
 
@@ -85,6 +74,18 @@ public class ReviewController {
     reviewService.delete(reviewId, userId);
     return ResponseEntity.noContent().build(); // 204 No Content
   }
+
+//  @GetMapping("/popular")
+//  public ResponseEntity<CursorPageResponsePopularReviewDto> getPopularReviews(
+//      @RequestParam(value="period", defaultValue="DAILY") String period,
+//      @RequestParam(value="direction",defaultValue ="ASC") String direction,
+//      @RequestParam(value = "cursor", required = false) String cursor,
+//      @RequestParam(value = "after", required = false) Instant after,
+//      @RequestParam(value = "limit", defaultValue = "50", required = false) int limit
+//  ){
+//    CursorPageResponsePopularReviewDto dto = reviewService.getPopularReviews();
+//    return ResponseEntity.status(HttpStatus.OK).body(dto);
+//  }
 
   @DeleteMapping("/{reviewId}/hard")
   public ResponseEntity<Void> hardDelete(
