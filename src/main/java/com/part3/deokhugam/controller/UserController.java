@@ -1,6 +1,7 @@
 package com.part3.deokhugam.controller;
 
 import com.part3.deokhugam.api.UserApi;
+import com.part3.deokhugam.domain.User;
 import com.part3.deokhugam.domain.enums.Period;
 import com.part3.deokhugam.dto.pagination.CursorPageResponseUserRankDataDto;
 import com.part3.deokhugam.dto.user.UserDto;
@@ -46,9 +47,17 @@ public class UserController implements UserApi {
    */
   @Override
   public ResponseEntity<UserLoginResponse> login(@Valid @RequestBody UserLoginRequest request) {
-    UserLoginResponse resp = userService.login(request);
+    User user = userService.login(request);
+
+    UserLoginResponse resp = new UserLoginResponse(
+        user.getId().toString(),
+        user.getEmail(),
+        user.getNickname(),
+        user.getCreatedAt()
+    );
+
     return ResponseEntity.ok()
-        .header("Deokhugam-Request-User-ID", resp.getUserId())
+        .header("Deokhugam-Request-User-ID", user.getId().toString())
         .body(resp);
   }
 

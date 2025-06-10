@@ -55,15 +55,15 @@ public class UserService {
 
   //로그인
   @Transactional(readOnly = true)
-  public UserLoginResponse login(UserLoginRequest req) {
-    // 이메일로 사용자 조회 (삭제되지 않은 상태)
+  public User login(UserLoginRequest req) {
+    // 1) 이메일로 사용자 조회
     User user = userRepository.findByEmailAndDeletedFalse(req.getEmail())
         .orElseThrow(() -> new BusinessException(
             ErrorCode.UNAUTHORIZED,
             "이메일 또는 비밀번호가 잘못되었습니다."
         ));
 
-    // 비밀번호 검증
+    // 2) 비밀번호 검증
     if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
       throw new BusinessException(
           ErrorCode.UNAUTHORIZED,
@@ -71,8 +71,8 @@ public class UserService {
       );
     }
 
-    // 로그인 성공 → 사용자 ID 반환
-    return new UserLoginResponse(user.getId().toString());
+    // 3) 인증 성공한 User 엔티티 반환
+    return user;
   }
 
   //UUID 문자열 검증 & 파싱
