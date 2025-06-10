@@ -101,7 +101,8 @@ public class NotificationService {
       throw new BusinessException(ErrorCode.NO_NOTIFICATION_PERMISSION);
     }
 
-    n.setConfirmed(req.isConfirmed());
+    mapper.updateFromRequest(req, n);
+
     return mapper.toDto(n);
   }
 
