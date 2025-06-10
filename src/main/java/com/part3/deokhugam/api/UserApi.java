@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import java.time.Instant;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -164,5 +165,26 @@ public interface UserApi {
 
       @RequestParam(name = "limit", defaultValue = "50")
       int limit
+  );
+
+  @Operation(
+      summary = "사용자 물리 삭제",
+      description = "헤더에 담긴 본인 ID로 사용자 데이터를 완전 삭제합니다."
+  )
+  @ApiResponses({
+      @ApiResponse(responseCode = "204", description = "삭제 성공"),
+      @ApiResponse(responseCode = "400", description = "잘못된 UUID 형식",
+          content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+      @ApiResponse(responseCode = "401", description = "헤더 누락 또는 인증 실패",
+          content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+      @ApiResponse(responseCode = "403", description = "권한 없음",
+          content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+      @ApiResponse(responseCode = "404", description = "해당 사용자 없음",
+          content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+  })
+  @DeleteMapping("/{userId}/hard")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  void hardDelete(
+      @PathVariable UUID userId
   );
 }

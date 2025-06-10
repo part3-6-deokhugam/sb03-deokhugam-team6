@@ -133,4 +133,14 @@ public class UserController implements UserApi {
 
     return ResponseEntity.ok(dto);
   }
+
+  /**
+   * 사용자 물리 삭제
+   */
+  @Override
+  public void hardDelete(
+      @PathVariable UUID userId
+  ) {
+    userService.hardDelete(userId.toString());
+  }
 }

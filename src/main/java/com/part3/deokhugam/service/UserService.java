@@ -131,4 +131,18 @@ public class UserService {
     user.delete();
     userRepository.save(user);
   }
+
+  //물리삭제
+  @Transactional
+  public void hardDelete(String userId) {
+    UUID uuid = parseUUID(userId);
+    // 존재 여부 체크
+    User user = userRepository.findById(uuid)
+        .orElseThrow(() -> new BusinessException(
+            ErrorCode.ENTITY_NOT_FOUND,
+            "사용자를 찾을 수 없습니다: " + userId
+        ));
+    // 실제 삭제
+    userRepository.delete(user);
+  }
 }
