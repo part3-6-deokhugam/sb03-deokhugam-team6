@@ -138,7 +138,7 @@ public class BookService {
 
     @Transactional(readOnly = true)
     public BookDto getBookById(UUID bookId) {
-        Book book = bookRepository.findById(bookId)
+        Book book = bookRepository.findByIdAndDeletedFalse(bookId)
                 .orElseThrow(() -> new BookException(ErrorCode.BOOK_NOT_FOUND, "Book not found with ID: " + bookId));
         return bookMapper.toDto(book);
     }
@@ -215,10 +215,10 @@ public class BookService {
     }
 
     public void deleteBookPhysical(UUID bookId) {
-        Book book = bookRepository.findById(bookId).orElseThrow(
-                () -> new BookException(ErrorCode.BOOK_NOT_FOUND, "Book not found with ID: " + bookId));
+        bookRepository.findById(bookId).orElseThrow(
+            () -> new BookException(ErrorCode.BOOK_NOT_FOUND, "Book not found with ID: " + bookId));
 
-        bookRepository.deleteById(bookId);
+      bookRepository.deleteById(bookId);
         // 도서 관련 리뷰 삭제 로직
     }
 
@@ -233,7 +233,10 @@ public class BookService {
             List<Book> books = bookRepository.findAll();
 
             List<PopularBook> allTimeRanking = books.stream()
-                .filter(book -> book.getBookMetrics() != null && book.getBookMetrics().getReviewCount() > 0)
+                .filter(book ->
+                    !book.isDeleted() &&
+                        book.getBookMetrics() != null &&
+                        book.getBookMetrics().getReviewCount() > 0)
                 .map(book -> {
                     BookMetrics metrics = book.getBookMetrics();
 
@@ -284,6 +287,7 @@ public class BookService {
         List<Review> reviews = reviewRepository.findByCreatedAtBetweenAndDeletedFalse(start, end);
 
         Map<UUID, List<Review>> grouped = reviews.stream()
+            .filter(r -> r.getBook() != null && !r.getBook().isDeleted())
             .collect(Collectors.groupingBy(r -> r.getBook().getId()));
 
         List<PopularBook> rankingList = grouped.entrySet().stream()
