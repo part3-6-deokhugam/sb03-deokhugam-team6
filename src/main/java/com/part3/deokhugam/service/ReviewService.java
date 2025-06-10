@@ -6,9 +6,11 @@ import com.part3.deokhugam.domain.ReviewLike;
 import com.part3.deokhugam.domain.ReviewLikeId;
 import com.part3.deokhugam.domain.ReviewMetrics;
 import com.part3.deokhugam.domain.User;
+import com.part3.deokhugam.dto.pagination.CursorPageResponseReviewDto;
 import com.part3.deokhugam.dto.review.ReviewCreateRequest;
 import com.part3.deokhugam.dto.review.ReviewDto;
 import com.part3.deokhugam.dto.review.ReviewLikeDto;
+import com.part3.deokhugam.dto.review.ReviewSearchCondition;
 import com.part3.deokhugam.dto.review.ReviewUpdateRequest;
 import com.part3.deokhugam.exception.BusinessException;
 import com.part3.deokhugam.exception.ErrorCode;
@@ -19,17 +21,21 @@ import com.part3.deokhugam.repository.BookRepository;
 import com.part3.deokhugam.repository.ReviewLikeRepository;
 import com.part3.deokhugam.repository.ReviewMetricsRepository;
 import com.part3.deokhugam.repository.ReviewRepository;
+import com.part3.deokhugam.repository.ReviewRepositoryCustom;
 import com.part3.deokhugam.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
 
   private final ReviewRepository reviewRepository;
+  private final ReviewRepositoryCustom reviewRepositoryCustom;
   private final UserRepository userRepository;
   private final BookRepository bookRepository;
   private final ReviewLikeRepository reviewLikeRepository;
@@ -38,6 +44,49 @@ public class ReviewService {
   private final ReviewMapper reviewMapper;
   private final ReviewMetricsMapper reviewMetricsMapper;
   private final ReviewLikeMapper reviewLikeMapper;
+
+  @Transactional(readOnly = true)
+  public CursorPageResponseReviewDto findAll(ReviewSearchCondition condition, UUID requestUserHeaderId) {
+    List<Review> reviews = reviewRepositoryCustom.findAll(condition);
+
+    boolean hasNext = reviews.size() > condition.getLimit();
+    List<Review> currentPage = hasNext ? reviews.subList(0, condition.getLimit()) : reviews;
+
+    List<ReviewDto> reviewDtoList = currentPage.stream()
+        .map(review -> {
+          ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(review.getId())
+              .orElse(null);
+          boolean likedByMe = isLikedByMe(review.getId(), requestUserHeaderId);
+          return reviewMapper.toDto(review, reviewMetrics, likedByMe);
+        })
+        .toList();
+
+    String nextCursor = null;
+    Instant nextAfter = null;
+
+    if (hasNext) {
+      Review last = currentPage.get(currentPage.size() - 1);
+      nextAfter = last.getCreatedAt();
+
+      if (condition.getOrderBy().equals("createdAt")) {
+        nextCursor = nextAfter.toString();
+      } else {
+        double lastRating = last.getRating();
+        nextCursor = Double.toString(lastRating);
+      }
+    }
+
+    long totalElements = reviewRepositoryCustom.countByCondition(condition);
+
+    return new CursorPageResponseReviewDto(
+        reviewDtoList,
+        nextCursor,
+        nextAfter,
+        condition.getLimit(),
+        (int) totalElements,
+        hasNext
+    );
+  }
 
   @Transactional
   public ReviewDto create(ReviewCreateRequest request) {
@@ -58,10 +107,9 @@ public class ReviewService {
     Review review = reviewMapper.toReview(request, user, book);
     Review savedReview = reviewRepository.save(review);
 
-    ReviewMetrics reviewMetrics = reviewMetricsMapper.toReviewMetrics(review);
-    ReviewMetrics savedReviewMetrics = reviewMetricsRepository.save(reviewMetrics);
+    ReviewMetrics reviewMetrics = reviewMetricsRepository.save(reviewMetricsMapper.toReviewMetrics(savedReview));
 
-    return reviewMapper.toDto(savedReview, savedReviewMetrics);
+    return reviewMapper.toDto(savedReview, reviewMetrics);
   }
 
   @Transactional
