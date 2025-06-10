@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/notifications")
 @RequiredArgsConstructor
 public class NotificationController implements NotificationApi {
   private final NotificationService notificationService;
