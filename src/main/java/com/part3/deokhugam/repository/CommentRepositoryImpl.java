@@ -28,17 +28,14 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
 
     if (cursor != null && after != null) {
       switch (direction) {
-        case "desc" -> condition.and(comment.createdAt.lt(after));
-        case "asc" -> condition.and(comment.createdAt.gt(after));
-        default -> throw new IllegalArgumentException("지원하지 않는 정렬 방향입니다");
+        case "DESC" -> condition.and(comment.createdAt.lt(after));
+        case "ASC" -> condition.and(comment.createdAt.gt(after));
       }
     }
 
-    OrderSpecifier<?> orderSpecifier = switch (direction) {
-      case "desc" -> comment.createdAt.desc();
-      case "asc" -> comment.createdAt.asc();
-      default -> throw new IllegalArgumentException("지원하지 않는 정렬 방향입니다.");
-    };
+    OrderSpecifier<?> orderSpecifier = "DESC".equals(direction)
+        ? comment.createdAt.desc()
+        : comment.createdAt.asc();
 
     return queryFactory
         .selectFrom(comment)
