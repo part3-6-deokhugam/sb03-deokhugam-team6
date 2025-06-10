@@ -7,8 +7,6 @@ import java.time.Instant;
 import java.util.List;
 
 public interface ReviewRepository extends JpaRepository<Review, UUID>, ReviewRepositoryCustom {
-    List<Review> findByCreatedAtBetween(Instant start, Instant end);
-
     List<Review> findByCreatedAtBetweenAndDeletedFalse(Instant start, Instant end);
 
     boolean existsByBookIdAndUserIdAndDeletedFalse(UUID bookId, UUID userId);

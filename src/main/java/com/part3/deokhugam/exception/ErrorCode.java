@@ -13,9 +13,11 @@ public enum ErrorCode {
 
   // 403 Forbidden
   FORBIDDEN(HttpStatus.FORBIDDEN, "권한이 없습니다."),
+  NO_NOTIFICATION_PERMISSION(HttpStatus.FORBIDDEN, "알림 수정 권한 없음"),
 
   // 404 Not Found
   ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 리소스를 찾을 수 없습니다."),
+  NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림 정보 없음"),
 
   // 409 Conflict
   DUPLICATE_RESOURCE(HttpStatus.CONFLICT, "이미 존재하는 리소스입니다."),
