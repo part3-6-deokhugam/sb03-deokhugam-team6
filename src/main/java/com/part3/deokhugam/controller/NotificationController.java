@@ -35,7 +35,7 @@ public class NotificationController implements NotificationApi {
   }
 
   @Override
-  @GetMapping("/{notificationId}")
+  @PatchMapping("/{notificationId}")
   public ResponseEntity<NotificationDto> patchNotification(
       @PathVariable UUID notificationId,
       @RequestHeader("Deokhugam-Request-User-ID") UUID userId,

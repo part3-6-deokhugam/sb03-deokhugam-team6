@@ -32,7 +32,8 @@ public enum ErrorCode {
   NAVER_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "네이버 API 요청에 실패하였습니다."),
   NAVER_API_RESPONSE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "네이버 API 응답 파싱에 실패하였습니다."),
   IMAGE_DOWNLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "책 표지 이미지 다운로드에 실패하였습니다."),
-  BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "책을 찾을 수 없습니다.");
+  BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "책을 찾을 수 없습니다."),
+  USER_NOT_FOUND(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다.");
 
   private final HttpStatus status;
   private final String message;

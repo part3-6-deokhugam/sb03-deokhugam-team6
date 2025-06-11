@@ -29,6 +29,7 @@ public class CommentService {
   private final UserRepository userRepository;
   private final ReviewRepository reviewRepository;
   private final CommentMapper commentMapper;
+  private final NotificationService notificationService;
 
   @Transactional
   public CommentDto create(CommentCreateRequest request) {
@@ -37,8 +38,19 @@ public class CommentService {
     Review review = reviewRepository.findById(request.getReviewId())
         .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
 
-    Comment comment = commentMapper.toEntity(request, user, review);
-    Comment savedComment = commentRepository.save(comment);
+    Comment savedComment = commentRepository.save(
+        commentMapper.toEntity(request, user, review)
+    );
+
+    String notifContent = review.getContent().length() <= 50
+        ? review.getContent()
+        : review.getContent().substring(0, 50) + "...";
+
+    notificationService.createNotification(
+        review.getUser().getId(),
+        review,
+        notifContent + "님이 나의 리뷰에 댓글을 남겼습니다."
+    );
 
     return commentMapper.toDto(savedComment);
   }
