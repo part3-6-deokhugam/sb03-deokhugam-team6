@@ -1,6 +1,5 @@
 package com.part3.deokhugam.dto.review;
 
-import com.part3.deokhugam.domain.PeriodType;
 import com.part3.deokhugam.domain.enums.Period;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -25,7 +24,7 @@ public class PopularReviewDto {
   private UUID userId;
   private String userNickname;
   private String reviewContent;
-  private BigDecimal reviewRating;
+  private Integer reviewRating;
   private Period period;
   private Instant createdAt;
   private Integer rank;

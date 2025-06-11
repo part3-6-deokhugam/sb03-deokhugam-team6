@@ -3,7 +3,6 @@ package com.part3.deokhugam.service;
 import static java.time.ZoneOffset.UTC;
 
 import com.part3.deokhugam.domain.Book;
-import com.part3.deokhugam.domain.Comment;
 import com.part3.deokhugam.domain.PopularReview;
 import com.part3.deokhugam.domain.Review;
 import com.part3.deokhugam.domain.ReviewLike;
@@ -13,6 +12,7 @@ import com.part3.deokhugam.domain.User;
 import com.part3.deokhugam.domain.enums.Period;
 import com.part3.deokhugam.dto.pagination.CursorPageResponsePopularReviewDto;
 import com.part3.deokhugam.dto.pagination.CursorPageResponseReviewDto;
+import com.part3.deokhugam.dto.review.PopularReviewDto;
 import com.part3.deokhugam.dto.review.PopularReviewSearchCondition;
 import com.part3.deokhugam.dto.review.ReviewCreateRequest;
 import com.part3.deokhugam.dto.review.ReviewDto;
@@ -37,9 +37,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -212,11 +210,44 @@ public class ReviewService {
     review.setDeleted(true);
   }
 
-//  @Transactional(readOnly = true)
-//  public CursorPageResponsePopularReviewDto getPopularReviews(PopularReviewSearchCondition condition) {
-//
-//
-//  }
+  @Transactional(readOnly = true)
+  public CursorPageResponsePopularReviewDto getPopularReviews(PopularReviewSearchCondition condition) {
+
+    Integer cursorRank = condition.getCursor() != null ? Integer.parseInt(condition.getCursor()) : null;
+
+    List<PopularReview> popularReviews = popularReviewRepository.findPopularReviewsWithCursor(
+        condition.getPeriod(),
+        String.valueOf(condition.getDirection()),
+        cursorRank,
+        condition.getAfter(),
+        condition.getLimit() + 1
+    );
+
+    boolean hasNext = popularReviews.size() > condition.getLimit();
+    if (hasNext) {
+      popularReviews.remove(popularReviews.size() - 1);
+    }
+
+    List<PopularReviewDto> content = popularReviews.stream()
+        .map(popularReviewMapper::toDto)
+        .toList();
+
+    // 5. 다음 커서 계산
+    String nextCursor = hasNext ? String.valueOf(popularReviews.get(popularReviews.size() - 1).getRank()) : null;
+    Instant nextAfter = hasNext ? popularReviews.get(popularReviews.size() - 1).getCreatedAt() : null;
+
+    // 6. 전체 개수
+    int totalCount = popularReviewRepository.countByPeriodType(condition.getPeriod());
+
+    return new CursorPageResponsePopularReviewDto(
+        content,
+        nextCursor,
+        nextAfter,
+        content.size(),
+        totalCount,
+        hasNext
+    );
+  }
 
   @Transactional
   public void hardDelete(UUID reviewId, UUID userId) {
