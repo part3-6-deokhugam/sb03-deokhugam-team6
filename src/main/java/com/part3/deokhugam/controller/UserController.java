@@ -9,8 +9,8 @@ import com.part3.deokhugam.dto.user.UserLoginRequest;
 import com.part3.deokhugam.dto.user.UserLoginResponse;
 import com.part3.deokhugam.dto.user.UserRegisterRequest;
 import com.part3.deokhugam.dto.user.UserUpdateRequest;
-import com.part3.deokhugam.exception.BusinessException;
 import com.part3.deokhugam.exception.ErrorCode;
+import com.part3.deokhugam.exception.UserException;
 import com.part3.deokhugam.service.UserRankDataService;
 import com.part3.deokhugam.service.UserService;
 import jakarta.validation.Valid;
@@ -71,7 +71,7 @@ public class UserController implements UserApi {
   ) {
     // 본인 조회가 아니면 403
     if (!requesterId.equals(userId)) {
-      throw new BusinessException(ErrorCode.FORBIDDEN, "다른 사용자의 정보를 조회할 수 없습니다.");
+      throw new UserException(ErrorCode.FORBIDDEN, "다른 사용자의 정보를 조회할 수 없습니다.");
     }
 
     UserDto user = userService.findById(userId.toString());
@@ -89,7 +89,7 @@ public class UserController implements UserApi {
   ) {
     // 본인이 아니면 403
     if (!requesterId.equals(userId)) {
-      throw new BusinessException(ErrorCode.FORBIDDEN, "다른 사용자의 닉네임을 수정할 수 없습니다.");
+      throw new UserException(ErrorCode.FORBIDDEN, "다른 사용자의 닉네임을 수정할 수 없습니다.");
     }
 
     UserDto updated = userService.updateNickname(userId.toString(), request);
@@ -107,7 +107,7 @@ public class UserController implements UserApi {
   ) {
     // 본인이 아니면 403
     if (!requesterId.equals(userId)) {
-      throw new BusinessException(ErrorCode.FORBIDDEN, "다른 사용자의 탈퇴를 수행할 수 없습니다.");
+      throw new UserException(ErrorCode.FORBIDDEN, "다른 사용자의 탈퇴를 수행할 수 없습니다.");
     }
 
     userService.delete(userId.toString());

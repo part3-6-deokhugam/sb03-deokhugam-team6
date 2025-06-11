@@ -6,7 +6,7 @@ import com.part3.deokhugam.dto.comment.CommentDto;
 import com.part3.deokhugam.dto.comment.CommentUpdateRequest;
 
 import com.part3.deokhugam.dto.pagination.CursorPageResponseCommentDto;
-import com.part3.deokhugam.exception.BusinessException;
+import com.part3.deokhugam.exception.CommentException;
 import com.part3.deokhugam.exception.ErrorCode;
 import com.part3.deokhugam.service.CommentService;
 import jakarta.validation.Valid;
@@ -49,7 +49,7 @@ public class CommentController implements CommentApi {
       @RequestParam(value = "limit", defaultValue = "50") int limit) {
 
     if (!direction.equalsIgnoreCase("ASC") && !direction.equalsIgnoreCase("DESC")) {
-      throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "지원하지 않는 정렬 방향입니다.");
+      throw new CommentException(ErrorCode.INVALID_INPUT_VALUE, "지원하지 않는 정렬 방향입니다.");
     }
 
     CursorPageResponseCommentDto response = commentService.findAll(reviewId, direction.toUpperCase(), cursor,
