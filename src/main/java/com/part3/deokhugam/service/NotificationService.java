@@ -2,7 +2,6 @@ package com.part3.deokhugam.service;
 
 import com.part3.deokhugam.domain.Notification;
 import com.part3.deokhugam.domain.Review;
-import com.part3.deokhugam.domain.User;
 import com.part3.deokhugam.dto.notification.NotificationDto;
 import com.part3.deokhugam.dto.notification.NotificationUpdateRequest;
 import com.part3.deokhugam.dto.pagination.CursorPageResponseNotificationDto;
@@ -158,5 +157,18 @@ public class NotificationService {
 
     // 3) 변경사항 저장
     repo.saveAll(unread);
+  }
+
+  @Transactional(readOnly = true)
+  public boolean existsNotification(
+      UUID userId,
+      UUID reviewId,
+      String content,
+      Instant start,
+      Instant end
+  ) {
+    return repo.existsByUserIdAndReviewIdAndContentAndCreatedAtBetween(
+        userId, reviewId, content, start, end
+    );
   }
 }
