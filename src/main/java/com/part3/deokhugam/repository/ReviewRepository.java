@@ -10,4 +10,6 @@ public interface ReviewRepository extends JpaRepository<Review, UUID>, ReviewRep
     List<Review> findByCreatedAtBetweenAndDeletedFalse(Instant start, Instant end);
 
     boolean existsByBookIdAndUserIdAndDeletedFalse(UUID bookId, UUID userId);
+
+    List<Review> findByDeletedFalse();
 }

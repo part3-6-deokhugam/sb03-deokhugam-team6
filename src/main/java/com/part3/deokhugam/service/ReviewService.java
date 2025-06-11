@@ -1,6 +1,9 @@
 package com.part3.deokhugam.service;
 
+import static java.time.ZoneOffset.UTC;
+
 import com.part3.deokhugam.domain.Book;
+import com.part3.deokhugam.domain.Comment;
 import com.part3.deokhugam.domain.PopularReview;
 import com.part3.deokhugam.domain.Review;
 import com.part3.deokhugam.domain.ReviewLike;
@@ -31,8 +34,10 @@ import com.part3.deokhugam.repository.ReviewRepositoryCustom;
 import com.part3.deokhugam.repository.UserRepository;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +47,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+
+  private static final double LIKE_WEIGHT = 0.3;
+  private static final double COMMENT_WEIGHT = 0.7;
 
   private final ReviewRepository reviewRepository;
   private final ReviewRepositoryCustom reviewRepositoryCustom;
@@ -57,7 +65,8 @@ public class ReviewService {
   private final PopularReviewMapper popularReviewMapper;
 
   @Transactional(readOnly = true)
-  public CursorPageResponseReviewDto findAll(ReviewSearchCondition condition, UUID requestUserHeaderId) {
+  public CursorPageResponseReviewDto findAll(ReviewSearchCondition condition,
+      UUID requestUserHeaderId) {
     List<Review> reviews = reviewRepositoryCustom.findAll(condition);
 
     boolean hasNext = reviews.size() > condition.getLimit();
@@ -138,7 +147,7 @@ public class ReviewService {
     ReviewLike reviewLike = reviewLikeRepository.findByReview_IdAndUser_Id(reviewId, userId)
         .orElse(reviewLikeMapper.toReviewLike(user, review, false));
 
-    if(!reviewLike.isLiked()){
+    if (!reviewLike.isLiked()) {
       reviewLike.setLiked(true);
       return reviewLikeMapper.toReviewLikeDto(userId, reviewId, true);
     }
@@ -154,7 +163,8 @@ public class ReviewService {
             () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId));
     ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(reviewId)
         .orElseThrow(
-            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "ReviewMetrics ID: " + reviewId));
+            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
+                "ReviewMetrics ID: " + reviewId));
 
     boolean likedByMe = isLikedByMe(reviewId, userId);
 
@@ -171,7 +181,8 @@ public class ReviewService {
             () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "User ID: " + userId));
     ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(reviewId)
         .orElseThrow(
-            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "ReviewMetrics ID: " + reviewId));
+            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
+                "ReviewMetrics ID: " + reviewId));
 
     if (!review.getUser().getId().equals(userId)) {
       throw new BusinessException(ErrorCode.FORBIDDEN,
@@ -225,26 +236,26 @@ public class ReviewService {
         .orElse(false);
   }
 
-  public void calculateReview(Period period){
+  public void calculateReview(Period period) {
     LocalDate periodDate = LocalDate.now();
 
-    if(period == Period.ALL_TIME){
-      List<Review> reviews = reviewRepository.findAll();
+    if (period == Period.ALL_TIME) {
+      List<Review> reviews = reviewRepository.findByDeletedFalse();
 
       List<PopularReview> allTimePopularReviews = reviews.stream()
           .filter(review ->
-              !review.isDeleted()&&
-              review.getMetrics()!=null)
+              review.getMetrics() != null)
           .map(
-              review ->{
+              review -> {
                 ReviewMetrics metrics = review.getMetrics();
 
                 int likeCount = metrics.getLikeCount();
                 int commentCount = metrics.getCommentCount();
 
-                double score = likeCount * 0.3 + commentCount * 0.7;
+                double score = likeCount * LIKE_WEIGHT + commentCount * COMMENT_WEIGHT;
 
-                return popularReviewMapper.toPopularReview(review, period, periodDate, score, likeCount, commentCount);
+                return popularReviewMapper.toPopularReview(review, period, periodDate, score,
+                    likeCount, commentCount);
               }
           ).sorted(Comparator.comparing(PopularReview::getScore).reversed())
           .toList();
@@ -255,5 +266,62 @@ public class ReviewService {
       popularReviewRepository.saveAll(allTimePopularReviews);
       return;
     }
+
+    Instant start;
+    Instant end;
+
+    switch (period) {
+      case DAILY:
+        start = periodDate.minusDays(1).atStartOfDay(UTC).toInstant();
+        end = periodDate.minusDays(1).atTime(LocalTime.MAX).atZone(UTC).toInstant();
+        break;
+      case WEEKLY:
+        start = periodDate.minusWeeks(1).atStartOfDay(UTC).toInstant();
+        end = periodDate.minusDays(1).atTime(LocalTime.MAX).atZone(UTC).toInstant();
+        break;
+      case MONTHLY:
+        start = periodDate.minusMonths(1).atStartOfDay(UTC).toInstant();
+        end = periodDate.minusDays(1).atTime(LocalTime.MAX).atZone(UTC).toInstant();
+        break;
+      default:
+        throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+    }
+
+    final Instant finalStart = start;
+    final Instant finalEnd = end;
+
+    List<Review> reviews = reviewRepository.findByDeletedFalse();
+
+    List<PopularReview> periodPopularReviews = reviews.stream()
+        .map(review -> {
+              int likeCount = (int) review.getLikes().stream()
+                  .filter(like ->
+                      like.isLiked() &&
+                          like.getCreatedAt() != null &&
+                          !like.getCreatedAt().isBefore(finalStart) &&
+                          !like.getCreatedAt().isAfter(finalEnd)
+                  )
+                  .count();
+
+              int commentCount = (int) review.getComments().stream()
+                  .filter(comment ->
+                      !comment.isDeleted() &&
+                          comment.getUpdatedAt() != null &&
+                          !comment.getUpdatedAt().isBefore(finalStart) &&
+                          !comment.getUpdatedAt().isAfter(finalEnd)
+                  )
+                  .count();
+
+              double score = likeCount * LIKE_WEIGHT + commentCount * COMMENT_WEIGHT;
+              return popularReviewMapper.toPopularReview(review, period, periodDate, score,
+                  likeCount, commentCount);
+            }
+        ).sorted(Comparator.comparing(PopularReview::getScore).reversed())
+        .toList();
+    for (int i = 0; i < periodPopularReviews.size(); i++) {
+      periodPopularReviews.get(i).setRank(i + 1);
+    }
+
+    popularReviewRepository.saveAll(periodPopularReviews);
   }
 }
