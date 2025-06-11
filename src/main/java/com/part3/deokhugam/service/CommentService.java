@@ -2,6 +2,7 @@ package com.part3.deokhugam.service;
 
 import com.part3.deokhugam.domain.Comment;
 import com.part3.deokhugam.domain.Review;
+import com.part3.deokhugam.domain.ReviewMetrics;
 import com.part3.deokhugam.domain.User;
 import com.part3.deokhugam.dto.comment.CommentCreateRequest;
 import com.part3.deokhugam.dto.comment.CommentDto;
@@ -11,6 +12,7 @@ import com.part3.deokhugam.exception.BusinessException;
 import com.part3.deokhugam.exception.ErrorCode;
 import com.part3.deokhugam.mapper.CommentMapper;
 import com.part3.deokhugam.repository.CommentRepository;
+import com.part3.deokhugam.repository.ReviewMetricsRepository;
 import com.part3.deokhugam.repository.ReviewRepository;
 import com.part3.deokhugam.repository.UserRepository;
 import java.time.Instant;
@@ -28,6 +30,7 @@ public class CommentService {
   private final CommentRepository commentRepository;
   private final UserRepository userRepository;
   private final ReviewRepository reviewRepository;
+  private final ReviewMetricsRepository reviewMetricsRepository;
   private final CommentMapper commentMapper;
   private final NotificationService notificationService;
 
@@ -41,6 +44,10 @@ public class CommentService {
     Comment savedComment = commentRepository.save(
         commentMapper.toEntity(request, user, review)
     );
+
+    ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(review.getId())
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
+    reviewMetrics.increaseCommentCount();
 
     String notifContent = review.getContent().length() <= 50
         ? review.getContent()
@@ -109,6 +116,9 @@ public class CommentService {
       throw new BusinessException(ErrorCode.FORBIDDEN);
     }
     comment.markAsDeleted();
+    ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(comment.getReview().getId())
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
+    reviewMetrics.decreaseCommentCount();
   }
 
   @Transactional
@@ -119,5 +129,10 @@ public class CommentService {
       throw new BusinessException(ErrorCode.FORBIDDEN);
     }
     commentRepository.delete(comment);
+    if (!comment.isDeleted()) {
+      ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(comment.getReview().getId())
+          .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
+      reviewMetrics.decreaseCommentCount();
+    }
   }
 }
