@@ -36,7 +36,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserRankData extends BaseEntity {
+public class PowerUser extends BaseEntity {
 
   @Id
   @GeneratedValue

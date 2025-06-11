@@ -2,10 +2,10 @@ package com.part3.deokhugam.batch;
 
 import com.part3.deokhugam.domain.enums.Period;
 import com.part3.deokhugam.domain.User;
-import com.part3.deokhugam.domain.UserRankData;
+import com.part3.deokhugam.domain.PowerUser;
 import com.part3.deokhugam.repository.CommentRepository;
 import com.part3.deokhugam.repository.ReviewRepository;
-import com.part3.deokhugam.repository.UserRankDataRepository;
+import com.part3.deokhugam.repository.PowerUserRepository;
 import com.part3.deokhugam.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,7 +24,7 @@ public class UserActivityScoreScheduler {
   private final UserRepository            userRepository;
   private final ReviewRepository          reviewRepository;
   private final CommentRepository         commentRepository;
-  private final UserRankDataRepository    userRankDataRepository;
+  private final PowerUserRepository    powerUserRepository;
 
   // 매일 03:00에 실행 (Asia/Seoul)
   @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
@@ -81,7 +81,7 @@ public class UserActivityScoreScheduler {
           .add(BigDecimal.valueOf(commentCount).multiply(BigDecimal.valueOf(0.3)));
 
       // 2-7) UserRankData 엔티티 빌드 & 저장
-      UserRankData urd = UserRankData.builder()
+      PowerUser urd = PowerUser.builder()
           .user(u)
           .periodType(period)
           .periodDate(periodDate)
@@ -91,7 +91,7 @@ public class UserActivityScoreScheduler {
           .score(score)
           .rank(rank++)
           .build();
-      userRankDataRepository.save(urd);
+      powerUserRepository.save(urd);
     }
   }
 }

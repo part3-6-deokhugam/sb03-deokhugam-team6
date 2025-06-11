@@ -1,6 +1,6 @@
 package com.part3.deokhugam.api;
 
-import com.part3.deokhugam.dto.pagination.CursorPageResponseUserRankDataDto;
+import com.part3.deokhugam.dto.pagination.CursorPageResponsePowerUserDto;
 import com.part3.deokhugam.dto.user.UserDto;
 import com.part3.deokhugam.dto.user.UserLoginRequest;
 import com.part3.deokhugam.dto.user.UserLoginResponse;
@@ -141,14 +141,14 @@ public interface UserApi {
   )
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "파워 유저 목록 조회 성공",
-          content = @Content(schema = @Schema(implementation = CursorPageResponseUserRankDataDto.class))),
+          content = @Content(schema = @Schema(implementation = CursorPageResponsePowerUserDto.class))),
       @ApiResponse(responseCode = "400", description = "잘못된 요청 (랭킹 기간 오류, 정렬 방향 오류 등)",
           content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
       @ApiResponse(responseCode = "500", description = "서버 내부 오류",
           content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
   })
   @GetMapping("/power")
-  ResponseEntity<CursorPageResponseUserRankDataDto> getPowerUsers(
+  ResponseEntity<CursorPageResponsePowerUserDto> getPowerUsers(
       @RequestParam(name = "period", defaultValue = "DAILY")
       @Pattern(regexp = "DAILY|WEEKLY|MONTHLY|ALL_TIME", message = "period 값이 올바르지 않습니다.")
       String period,
