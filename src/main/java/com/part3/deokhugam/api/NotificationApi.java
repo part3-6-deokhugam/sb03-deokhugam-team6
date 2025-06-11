@@ -1,4 +1,3 @@
-// com.part3.deokhugam.api.NotificationApi.java
 package com.part3.deokhugam.api;
 
 import com.part3.deokhugam.dto.notification.NotificationDto;

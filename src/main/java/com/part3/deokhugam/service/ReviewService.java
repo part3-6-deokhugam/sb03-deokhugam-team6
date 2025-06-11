@@ -57,6 +57,8 @@ public class ReviewService {
   private final ReviewMetricsRepository reviewMetricsRepository;
   private final PopularReviewRepository popularReviewRepository;
 
+  private final NotificationService notificationService;
+
   private final ReviewMapper reviewMapper;
   private final ReviewMetricsMapper reviewMetricsMapper;
   private final ReviewLikeMapper reviewLikeMapper;
@@ -147,6 +149,14 @@ public class ReviewService {
 
     if (!reviewLike.isLiked()) {
       reviewLike.setLiked(true);
+
+      String notifContent = user.getNickname() + "님이 좋아요를 눌렀습니다.";
+      notificationService.createNotification(
+          review.getUser().getId(),
+          review,
+          notifContent
+      );
+
       return reviewLikeMapper.toReviewLikeDto(userId, reviewId, true);
     }
 
