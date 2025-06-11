@@ -1,12 +1,16 @@
 package com.part3.deokhugam.service;
 
 import com.part3.deokhugam.domain.Book;
+import com.part3.deokhugam.domain.PopularReview;
 import com.part3.deokhugam.domain.Review;
 import com.part3.deokhugam.domain.ReviewLike;
 import com.part3.deokhugam.domain.ReviewLikeId;
 import com.part3.deokhugam.domain.ReviewMetrics;
 import com.part3.deokhugam.domain.User;
+import com.part3.deokhugam.domain.enums.Period;
+import com.part3.deokhugam.dto.pagination.CursorPageResponsePopularReviewDto;
 import com.part3.deokhugam.dto.pagination.CursorPageResponseReviewDto;
+import com.part3.deokhugam.dto.review.PopularReviewSearchCondition;
 import com.part3.deokhugam.dto.review.ReviewCreateRequest;
 import com.part3.deokhugam.dto.review.ReviewDto;
 import com.part3.deokhugam.dto.review.ReviewLikeDto;
@@ -14,18 +18,23 @@ import com.part3.deokhugam.dto.review.ReviewSearchCondition;
 import com.part3.deokhugam.dto.review.ReviewUpdateRequest;
 import com.part3.deokhugam.exception.BusinessException;
 import com.part3.deokhugam.exception.ErrorCode;
+import com.part3.deokhugam.mapper.PopularReviewMapper;
 import com.part3.deokhugam.mapper.ReviewLikeMapper;
 import com.part3.deokhugam.mapper.ReviewMapper;
 import com.part3.deokhugam.mapper.ReviewMetricsMapper;
 import com.part3.deokhugam.repository.BookRepository;
+import com.part3.deokhugam.repository.PopularReviewRepository;
 import com.part3.deokhugam.repository.ReviewLikeRepository;
 import com.part3.deokhugam.repository.ReviewMetricsRepository;
 import com.part3.deokhugam.repository.ReviewRepository;
 import com.part3.deokhugam.repository.ReviewRepositoryCustom;
 import com.part3.deokhugam.repository.UserRepository;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,10 +49,12 @@ public class ReviewService {
   private final BookRepository bookRepository;
   private final ReviewLikeRepository reviewLikeRepository;
   private final ReviewMetricsRepository reviewMetricsRepository;
+  private final PopularReviewRepository popularReviewRepository;
 
   private final ReviewMapper reviewMapper;
   private final ReviewMetricsMapper reviewMetricsMapper;
   private final ReviewLikeMapper reviewLikeMapper;
+  private final PopularReviewMapper popularReviewMapper;
 
   @Transactional(readOnly = true)
   public CursorPageResponseReviewDto findAll(ReviewSearchCondition condition, UUID requestUserHeaderId) {
@@ -190,6 +201,12 @@ public class ReviewService {
     review.setDeleted(true);
   }
 
+//  @Transactional(readOnly = true)
+//  public CursorPageResponsePopularReviewDto getPopularReviews(PopularReviewSearchCondition condition) {
+//
+//
+//  }
+
   @Transactional
   public void hardDelete(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findById(reviewId)
@@ -206,5 +223,37 @@ public class ReviewService {
     return reviewLikeRepository.findById(new ReviewLikeId(reviewId, userId))
         .map(ReviewLike::isLiked)
         .orElse(false);
+  }
+
+  public void calculateReview(Period period){
+    LocalDate periodDate = LocalDate.now();
+
+    if(period == Period.ALL_TIME){
+      List<Review> reviews = reviewRepository.findAll();
+
+      List<PopularReview> allTimePopularReviews = reviews.stream()
+          .filter(review ->
+              !review.isDeleted()&&
+              review.getMetrics()!=null)
+          .map(
+              review ->{
+                ReviewMetrics metrics = review.getMetrics();
+
+                int likeCount = metrics.getLikeCount();
+                int commentCount = metrics.getCommentCount();
+
+                double score = likeCount * 0.3 + commentCount * 0.7;
+
+                return popularReviewMapper.toPopularReview(review, period, periodDate, score, likeCount, commentCount);
+              }
+          ).sorted(Comparator.comparing(PopularReview::getScore).reversed())
+          .toList();
+      for (int i = 0; i < allTimePopularReviews.size(); i++) {
+        allTimePopularReviews.get(i).setRank(i + 1);
+      }
+
+      popularReviewRepository.saveAll(allTimePopularReviews);
+      return;
+    }
   }
 }
