@@ -23,6 +23,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class ReviewMetrics extends BaseEntity {
+
   @Id
   @Column(name = "review_id")
   private UUID reviewId;
@@ -38,6 +39,14 @@ public class ReviewMetrics extends BaseEntity {
 
   @Column(name = "comment_count", nullable = false)
   @Builder.Default
-  private int commentCount= 0;
+  private int commentCount = 0;
+
+  public void increaseCommentCount() {
+    this.commentCount++;
+  }
+
+  public void decreaseCommentCount() {
+    this.commentCount--;
+  }
 
 }
