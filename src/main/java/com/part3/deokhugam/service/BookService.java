@@ -11,6 +11,8 @@ import com.part3.deokhugam.dto.pagination.CursorPageResponsePopularBookDto;
 import com.part3.deokhugam.exception.BookException;
 import com.part3.deokhugam.exception.ErrorCode;
 import com.part3.deokhugam.infra.aws.s3.S3Service;
+import com.part3.deokhugam.mapper.BookMapper;
+import com.part3.deokhugam.mapper.PopularBookMapper;
 import com.part3.deokhugam.repository.BookRepository;
 import com.part3.deokhugam.repository.PopularBookRepository;
 import com.part3.deokhugam.repository.ReviewRepository;

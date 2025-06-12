@@ -1,6 +1,7 @@
-package com.part3.deokhugam.dto.book;
+package com.part3.deokhugam.mapper;
 
 import com.part3.deokhugam.domain.Book;
+import com.part3.deokhugam.dto.book.BookDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
