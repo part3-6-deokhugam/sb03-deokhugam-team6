@@ -156,6 +156,7 @@ public class ReviewService {
           review,
           notifContent
       );
+      reviewLikeRepository.save(reviewLike);
 
       return reviewLikeMapper.toReviewLikeDto(userId, reviewId, true);
     }
