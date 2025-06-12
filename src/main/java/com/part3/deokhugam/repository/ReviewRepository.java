@@ -13,6 +13,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID>, ReviewRep
 
     boolean existsByBookIdAndUserIdAndDeletedFalse(UUID bookId, UUID userId);
 
+    List<Review> findByDeletedFalse();
+
   @Query("""
   SELECT COUNT(rl)
     FROM ReviewLike rl

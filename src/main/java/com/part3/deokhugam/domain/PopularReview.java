@@ -50,4 +50,10 @@ import lombok.Builder;
 
     @Column(nullable = false)
     private int rank;
+
+    @Column(nullable = false)
+    private int likeCount;
+
+    @Column(nullable = false)
+    private int commentCount;
   }
