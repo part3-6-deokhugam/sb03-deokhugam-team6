@@ -93,7 +93,7 @@ public class BookService {
   }
 
   public BookDto createBook(BookCreateRequest request, MultipartFile image) {
-    if (bookRepository.existsByIsbn(request.isbn())) {
+    if (bookRepository.existsByIsbnAndDeletedFalse(request.isbn())) {
       throw new BookException(ErrorCode.BOOK_ALREADY_EXISTS,
           Map.of(
               "isbn", request.isbn(),
