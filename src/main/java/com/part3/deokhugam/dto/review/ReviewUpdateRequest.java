@@ -18,8 +18,8 @@ import lombok.Setter;
 public class ReviewUpdateRequest {
   @NotBlank
   private String content;
-  @Min(1)
+  @Min(0)
   @Max(5)
   @NotNull
-  private Integer rating;
+  private Double rating;
 }
