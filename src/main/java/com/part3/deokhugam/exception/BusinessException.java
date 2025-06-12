@@ -1,7 +1,5 @@
 package com.part3.deokhugam.exception;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 
@@ -20,10 +18,10 @@ public class BusinessException extends RuntimeException {
 
   // (2) 기존 호환성: 한 개의 String 디테일만 넘길 때
   public BusinessException(ErrorCode errorCode, String detail) {
-    super(errorCode.getMessage() + (detail != null ? " (" + detail + ")" : ""));
+    super(errorCode.getMessage());
     this.errorCode = errorCode;
     // 단일 String을 “detail”이라는 키 하나로 Map에 담아서 저장
-    this.details = Map.of("detail", detail);
+    this.details = (detail != null) ? Map.of("detail", detail) : null;
   }
 
   // (3) 새로 추가: 필드명→값 쌍 형태의 Map을 넘길 때 사용하는 생성자
