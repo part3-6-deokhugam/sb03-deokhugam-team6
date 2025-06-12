@@ -48,6 +48,7 @@ public class CommentService {
     ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(review.getId())
         .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
     reviewMetrics.increaseCommentCount();
+    reviewMetricsRepository.save(reviewMetrics);
 
     String notifContent = review.getContent().length() <= 50
         ? review.getContent()
@@ -119,6 +120,7 @@ public class CommentService {
     ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(comment.getReview().getId())
         .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
     reviewMetrics.decreaseCommentCount();
+    reviewMetricsRepository.save(reviewMetrics);
   }
 
   @Transactional
@@ -133,6 +135,7 @@ public class CommentService {
       ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(comment.getReview().getId())
           .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
       reviewMetrics.decreaseCommentCount();
+      reviewMetricsRepository.save(reviewMetrics);
     }
   }
 }
