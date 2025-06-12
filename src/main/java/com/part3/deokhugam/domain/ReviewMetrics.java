@@ -46,7 +46,7 @@ public class ReviewMetrics extends BaseEntity {
   }
 
   public void decreaseCommentCount() {
-    this.commentCount--;
+    this.commentCount = Math.max(0, this.commentCount - 1);
   }
 
 }

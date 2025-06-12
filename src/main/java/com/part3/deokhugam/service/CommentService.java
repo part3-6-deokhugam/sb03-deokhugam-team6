@@ -54,6 +54,7 @@ public class CommentService {
         .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_METRICS_NOT_FOUND,
             Map.of("reviewMetricsId", review.getId().toString())));
     reviewMetrics.increaseCommentCount();
+    reviewMetricsRepository.save(reviewMetrics);
 
     String notifContent = review.getContent().length() <= 50
         ? review.getContent()
@@ -138,6 +139,7 @@ public class CommentService {
         .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_METRICS_NOT_FOUND,
             Map.of("reviewMetricsId", comment.getReview().getId().toString())));
     reviewMetrics.decreaseCommentCount();
+    reviewMetricsRepository.save(reviewMetrics);
   }
 
   @Transactional
@@ -158,6 +160,7 @@ public class CommentService {
           .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_METRICS_NOT_FOUND,
               Map.of("reviewMetricsId", comment.getReview().getId().toString())));
       reviewMetrics.decreaseCommentCount();
+      reviewMetricsRepository.save(reviewMetrics);
     }
   }
 }
