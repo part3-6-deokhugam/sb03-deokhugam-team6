@@ -21,7 +21,7 @@ public class ReviewDto {
   private UUID userId;
   private String userNickname;
   private String content;
-  private Integer rating;
+  private Double rating;
   private Integer likeCount;
   private Integer commentCount;
   @Builder.Default

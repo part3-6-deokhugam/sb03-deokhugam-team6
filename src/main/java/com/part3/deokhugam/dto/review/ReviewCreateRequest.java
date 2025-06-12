@@ -25,7 +25,7 @@ public class ReviewCreateRequest {
   @NotBlank
   private String content;
   @NotNull
-  @Min(1)
+  @Min(0)
   @Max(5)
-  private Integer rating;
+  private Double rating;
 }

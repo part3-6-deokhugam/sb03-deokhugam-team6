@@ -8,6 +8,7 @@ import com.part3.deokhugam.dto.review.ReviewSearchCondition;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -64,17 +65,17 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
     if ("rating".equalsIgnoreCase(orderBy)) {
       if (cursor != null && after != null) {
-        int ratingCursor = (int) Double.parseDouble(cursor);
+        Double ratingCursor = Double.parseDouble(cursor);
 
         if (directionOrder == Order.DESC) {
           where.and(
               review.rating.lt(ratingCursor)
-                  .or(review.rating.eq(ratingCursor).and(review.createdAt.lt(after)))
+                  .or(review.rating.eq(Expressions.constant(ratingCursor)).and(review.createdAt.lt(after)))
           );
         } else {
           where.and(
               review.rating.gt(ratingCursor)
-                  .or(review.rating.eq(ratingCursor).and(review.createdAt.gt(after)))
+                  .or(review.rating.eq(Expressions.constant(ratingCursor)).and(review.createdAt.gt(after)))
           );
         }
       }

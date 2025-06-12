@@ -46,7 +46,7 @@ public class Review extends BaseEntity {
   private String content;
 
   @Column(nullable = false)
-  private Integer rating;
+  private Double rating;
 
   @Column(nullable = false)
   @Builder.Default

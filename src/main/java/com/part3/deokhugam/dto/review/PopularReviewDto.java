@@ -24,7 +24,7 @@ public class PopularReviewDto {
   private UUID userId;
   private String userNickname;
   private String reviewContent;
-  private Integer reviewRating;
+  private Double reviewRating;
   private Period period;
   private Instant createdAt;
   private Integer rank;
