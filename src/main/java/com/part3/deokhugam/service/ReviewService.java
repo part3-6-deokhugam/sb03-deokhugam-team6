@@ -314,7 +314,7 @@ public class ReviewService {
         .orElse(false);
   }
 
-  @Transactional(readOnly = true)
+  @Transactional
   public void calculateReview(Period period) {
     LocalDate periodDate = LocalDate.now();
 
