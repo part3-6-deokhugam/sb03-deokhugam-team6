@@ -2,9 +2,12 @@ package com.part3.deokhugam.repository;
 
 import com.part3.deokhugam.domain.Book;
 import com.part3.deokhugam.domain.QBook;
+import com.part3.deokhugam.exception.BookException;
+import com.part3.deokhugam.exception.ErrorCode;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -125,7 +128,7 @@ public class BookRepositoryImpl implements BookRepositoryCustom {
             case "publishedDate" -> primaryOrder = "asc".equalsIgnoreCase(direction) ? book.publishedDate.asc() : book.publishedDate.desc();
             case "rating" -> primaryOrder = "asc".equalsIgnoreCase(direction) ? book.bookMetrics.averageRating.asc() : book.bookMetrics.averageRating.desc();
             case "reviewCount" -> primaryOrder = "asc".equalsIgnoreCase(direction) ? book.bookMetrics.reviewCount.asc() : book.bookMetrics.reviewCount.desc();
-            default -> throw new IllegalArgumentException("정렬 기준이 잘못되었습니다: " + orderBy);
+            default -> throw new BookException(ErrorCode.INVALID_ORDER_BY, Map.of("orderBy", orderBy));
         }
 
         // 5. 쿼리 실행

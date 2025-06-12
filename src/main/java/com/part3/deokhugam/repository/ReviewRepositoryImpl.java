@@ -6,6 +6,8 @@ import com.part3.deokhugam.domain.QUser;
 import com.part3.deokhugam.domain.Review;
 import com.part3.deokhugam.dto.review.ReviewSearchCondition;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -54,28 +56,47 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     }
 
     String orderBy = condition.getOrderBy();
+    String direction = condition.getDirection();
     String cursor = condition.getCursor();
     Instant after = condition.getAfter();
 
-    if ("rating".equals(orderBy)) {
+    Order directionOrder = "ASC".equalsIgnoreCase(direction) ? Order.ASC : Order.DESC;
+
+    if ("rating".equalsIgnoreCase(orderBy)) {
       if (cursor != null && after != null) {
         int ratingCursor = (int) Double.parseDouble(cursor);
-        where.and(
-            review.rating.lt(ratingCursor)
-                .or(review.rating.eq(ratingCursor))
-                .and(review.createdAt.lt(after))
-        );
+
+        if (directionOrder == Order.DESC) {
+          where.and(
+              review.rating.lt(ratingCursor)
+                  .or(review.rating.eq(ratingCursor).and(review.createdAt.lt(after)))
+          );
+        } else {
+          where.and(
+              review.rating.gt(ratingCursor)
+                  .or(review.rating.eq(ratingCursor).and(review.createdAt.gt(after)))
+          );
+        }
       }
-      query.orderBy(review.rating.desc(), review.createdAt.desc());
-    } else {
+
+      query.orderBy(
+          new OrderSpecifier<>(directionOrder, review.rating),
+          new OrderSpecifier<>(directionOrder, review.createdAt)
+      );
+
+    } else { // default: createdAt
       if (after != null) {
-        where.and(review.createdAt.lt(after));
+        if (directionOrder == Order.DESC) {
+          where.and(review.createdAt.lt(after));
+        } else {
+          where.and(review.createdAt.gt(after));
+        }
       }
-      query.orderBy(review.createdAt.desc());
+
+      query.orderBy(new OrderSpecifier<>(directionOrder, review.createdAt));
     }
 
     int limit = condition.getLimit();
-
     query.where(where)
         .limit(limit + 1);
 
