@@ -19,8 +19,10 @@ import com.part3.deokhugam.dto.review.ReviewDto;
 import com.part3.deokhugam.dto.review.ReviewLikeDto;
 import com.part3.deokhugam.dto.review.ReviewSearchCondition;
 import com.part3.deokhugam.dto.review.ReviewUpdateRequest;
-import com.part3.deokhugam.exception.BusinessException;
+import com.part3.deokhugam.exception.BookException;
 import com.part3.deokhugam.exception.ErrorCode;
+import com.part3.deokhugam.exception.ReviewException;
+import com.part3.deokhugam.exception.UserException;
 import com.part3.deokhugam.mapper.PopularReviewMapper;
 import com.part3.deokhugam.mapper.ReviewLikeMapper;
 import com.part3.deokhugam.mapper.ReviewMapper;
@@ -37,6 +39,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -111,17 +114,18 @@ public class ReviewService {
   @Transactional
   public ReviewDto create(ReviewCreateRequest request) {
     User user = userRepository.findById(request.getUserId())
-        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
-            "User ID: " + request.getUserId()));
+        .orElseThrow(() -> new ReviewException(ErrorCode.USER_NOT_FOUND,
+            Map.of("userId", request.getUserId().toString())));
     Book book = bookRepository.findById(request.getBookId())
-        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
-            "Book ID: " + request.getBookId()));
+        .orElseThrow(() -> new BookException(ErrorCode.BOOK_NOT_FOUND,
+            Map.of("bookId", request.getBookId().toString())));
 
     boolean exists = reviewRepository.existsByBookIdAndUserIdAndDeletedFalse(book.getId(),
         user.getId());
     if (exists) {
-      throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE,
-          "User ID: " + request.getUserId() + ", Book ID: " + request.getBookId());
+      throw new ReviewException(ErrorCode.REVIEW_ALREADY_EXISTS,
+          Map.of("userId", request.getUserId().toString(), "bookId", request.getBookId().toString())
+      );
     }
 
     Review review = reviewMapper.toReview(request, user, book);
@@ -138,11 +142,11 @@ public class ReviewService {
   @Transactional
   public ReviewLikeDto like(UUID reviewId, UUID userId) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
-            "User ID: " + userId));
+        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND,
+            Map.of("userId", userId.toString())));
     Review review = reviewRepository.findById(reviewId)
-        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
-            "review ID: " + reviewId));
+        .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND,
+            Map.of("reviewId", reviewId.toString())));
 
     ReviewLike reviewLike = reviewLikeRepository.findByReview_IdAndUser_Id(reviewId, userId)
         .orElse(reviewLikeMapper.toReviewLike(user, review, false));
@@ -168,11 +172,12 @@ public class ReviewService {
   public ReviewDto findById(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(
-            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId));
+            () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND,
+                Map.of("reviewId", reviewId.toString())));
     ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(reviewId)
         .orElseThrow(
-            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
-                "ReviewMetrics ID: " + reviewId));
+            () -> new ReviewException(ErrorCode.REVIEW_METRICS_NOT_FOUND,
+                Map.of("reviewMetricsId", reviewId.toString())));
 
     boolean likedByMe = isLikedByMe(reviewId, userId);
 
@@ -182,22 +187,22 @@ public class ReviewService {
   @Transactional
   public ReviewDto update(UUID reviewId, UUID userId, ReviewUpdateRequest request) {
     Review review = reviewRepository.findById(reviewId)
-        .orElseThrow(
-            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId));
+        .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND,
+                Map.of("reviewId", reviewId.toString())));
     User user = userRepository.findById(userId)
-        .orElseThrow(
-            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "User ID: " + userId));
+        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND,
+                Map.of("userId", userId.toString())));
     ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(reviewId)
-        .orElseThrow(
-            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
-                "ReviewMetrics ID: " + reviewId));
+        .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_METRICS_NOT_FOUND,
+                Map.of("reviewMetricsId", reviewId.toString())));
 
     if (!review.getUser().getId().equals(userId)) {
-      throw new BusinessException(ErrorCode.FORBIDDEN,
-          "User ID: " + userId + ", Review ID: " + reviewId);
+      throw new ReviewException(ErrorCode.REVIEW_FORBIDDEN,
+          Map.of("userId", userId.toString(), "reviewId", reviewId.toString()));
     }
     if (review.isDeleted()) {
-      throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId);
+      throw new ReviewException(ErrorCode.REVIEW_NOT_FOUND,
+          Map.of("reviewId", reviewId.toString()));
     }
 
     boolean likedByMe = isLikedByMe(reviewId, userId);
@@ -212,18 +217,21 @@ public class ReviewService {
   public void delete(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(
-            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId));
+            () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND,
+                Map.of("reviewId", reviewId.toString())));
     if (!review.getUser().getId().equals(userId)) {
-      throw new BusinessException(ErrorCode.FORBIDDEN,
-          "User ID: " + userId + ", Review ID: " + reviewId);
+      throw new ReviewException(ErrorCode.REVIEW_FORBIDDEN,
+          Map.of("userId", userId.toString(), "reviewId", reviewId.toString()));
     }
     review.setDeleted(true);
   }
 
   @Transactional(readOnly = true)
-  public CursorPageResponsePopularReviewDto getPopularReviews(PopularReviewSearchCondition condition) {
+  public CursorPageResponsePopularReviewDto getPopularReviews(
+      PopularReviewSearchCondition condition) {
 
-    Integer cursorRank = condition.getCursor() != null ? Integer.parseInt(condition.getCursor()) : null;
+    Integer cursorRank =
+        condition.getCursor() != null ? Integer.parseInt(condition.getCursor()) : null;
 
     List<PopularReview> popularReviews = popularReviewRepository.findPopularReviewsWithCursor(
         condition.getPeriod(),
@@ -243,8 +251,10 @@ public class ReviewService {
         .toList();
 
     // 5. 다음 커서 계산
-    String nextCursor = hasNext ? String.valueOf(popularReviews.get(popularReviews.size() - 1).getRank()) : null;
-    Instant nextAfter = hasNext ? popularReviews.get(popularReviews.size() - 1).getCreatedAt() : null;
+    String nextCursor =
+        hasNext ? String.valueOf(popularReviews.get(popularReviews.size() - 1).getRank()) : null;
+    Instant nextAfter =
+        hasNext ? popularReviews.get(popularReviews.size() - 1).getCreatedAt() : null;
 
     // 6. 전체 개수
     int totalCount = popularReviewRepository.countByPeriodType(condition.getPeriod());
@@ -262,11 +272,11 @@ public class ReviewService {
   @Transactional
   public void hardDelete(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findById(reviewId)
-        .orElseThrow(
-            () -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "Review ID: " + reviewId));
+        .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND,
+                Map.of("reviewId", reviewId.toString())));
     if (!review.getUser().getId().equals(userId)) {
-      throw new BusinessException(ErrorCode.FORBIDDEN,
-          "User ID: " + userId + ", Review ID: " + reviewId);
+      throw new ReviewException(ErrorCode.REVIEW_FORBIDDEN,
+          Map.of("userId", userId.toString(), "reviewId", reviewId.toString()));
     }
     reviewRepository.delete(review);
   }
@@ -325,7 +335,7 @@ public class ReviewService {
         end = periodDate.minusDays(1).atTime(LocalTime.MAX).atZone(UTC).toInstant();
         break;
       default:
-        throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        throw new ReviewException(ErrorCode.INVALID_PERIOD,Map.of("period", period.name()));
     }
 
     final Instant finalStart = start;
