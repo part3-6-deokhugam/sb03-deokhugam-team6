@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
     ErrorResponse response = ErrorResponse.builder()
         .status(code.getStatus().value())
         .error(code.name())
-        .message(ex.getMessage())   // ErrorCode 메시지 + (detail 포함)
+        .message(code.getMessage())   // 사용자에게는 ErrorCode에 정의된 메시지만 보여줌
         .details(ex.getDetails())
         .build();
 
