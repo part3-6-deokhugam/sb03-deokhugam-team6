@@ -3,6 +3,7 @@ package com.part3.deokhugam.service;
 import static java.time.ZoneOffset.UTC;
 
 import com.part3.deokhugam.domain.Book;
+import com.part3.deokhugam.domain.BookMetrics;
 import com.part3.deokhugam.domain.PopularReview;
 import com.part3.deokhugam.domain.Review;
 import com.part3.deokhugam.domain.ReviewLike;
@@ -25,6 +26,7 @@ import com.part3.deokhugam.mapper.PopularReviewMapper;
 import com.part3.deokhugam.mapper.ReviewLikeMapper;
 import com.part3.deokhugam.mapper.ReviewMapper;
 import com.part3.deokhugam.mapper.ReviewMetricsMapper;
+import com.part3.deokhugam.repository.BookMetricsRepository;
 import com.part3.deokhugam.repository.BookRepository;
 import com.part3.deokhugam.repository.PopularReviewRepository;
 import com.part3.deokhugam.repository.ReviewLikeRepository;
@@ -32,6 +34,7 @@ import com.part3.deokhugam.repository.ReviewMetricsRepository;
 import com.part3.deokhugam.repository.ReviewRepository;
 import com.part3.deokhugam.repository.ReviewRepositoryCustom;
 import com.part3.deokhugam.repository.UserRepository;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -56,6 +59,7 @@ public class ReviewService {
   private final ReviewLikeRepository reviewLikeRepository;
   private final ReviewMetricsRepository reviewMetricsRepository;
   private final PopularReviewRepository popularReviewRepository;
+  private final BookMetricsRepository bookMetricsRepository;
 
   private final NotificationService notificationService;
 
@@ -130,6 +134,8 @@ public class ReviewService {
 
     Review savedReview = reviewRepository.save(review);
     ReviewMetrics savedMetrics = reviewMetricsRepository.save(metrics);
+
+    updateByReviewChange(savedReview, 1);
 
     return reviewMapper.toDto(savedReview, savedMetrics);
   }
@@ -207,6 +213,8 @@ public class ReviewService {
     review.setContent(request.getContent());
     review.setRating(request.getRating());
 
+    updateByReviewChange(review, 0);
+
     return reviewMapper.toDto(review, reviewMetrics, likedByMe);
   }
 
@@ -219,6 +227,7 @@ public class ReviewService {
       throw new BusinessException(ErrorCode.FORBIDDEN,
           "User ID: " + userId + ", Review ID: " + reviewId);
     }
+    updateByReviewChange(review, -1);
     review.setDeleted(true);
   }
 
@@ -268,7 +277,27 @@ public class ReviewService {
       throw new BusinessException(ErrorCode.FORBIDDEN,
           "User ID: " + userId + ", Review ID: " + reviewId);
     }
+    updateByReviewChange(review, -1);
     reviewRepository.delete(review);
+  }
+
+  public void updateByReviewChange(Review review, int change) {
+    UUID bookId = review.getBook().getId();
+
+    BookMetrics bookMetrics = bookMetricsRepository.findById(bookId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
+            "BookMetrics ID: " + bookId));
+
+    if(!review.isDeleted()&&change!=0){
+      bookMetrics.setReviewCount(bookMetrics.getReviewCount() + change);
+    }
+
+    double averageRating = reviewRepository.findByBookIdAndDeletedFalse(bookId).stream()
+        .mapToDouble(Review::getRating)
+        .average()
+        .orElse(0.0);
+
+    bookMetrics.setAverageRating(BigDecimal.valueOf(averageRating));
   }
 
   public boolean isLikedByMe(UUID reviewId, UUID userId) {

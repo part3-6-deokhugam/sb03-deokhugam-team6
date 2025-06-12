@@ -15,6 +15,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID>, ReviewRep
 
     List<Review> findByDeletedFalse();
 
+    List<Review> findByBookIdAndDeletedFalse(UUID bookId);
+
   @Query("""
   SELECT COUNT(rl)
     FROM ReviewLike rl
