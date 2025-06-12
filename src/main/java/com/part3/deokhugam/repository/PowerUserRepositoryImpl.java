@@ -1,7 +1,7 @@
 package com.part3.deokhugam.repository;
 
-import com.part3.deokhugam.domain.UserRankData;
-import com.part3.deokhugam.domain.QUserRankData;
+import com.part3.deokhugam.domain.PowerUser;
+import com.part3.deokhugam.domain.QPowerUser;
 import com.part3.deokhugam.domain.enums.Period;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
@@ -14,12 +14,12 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class UserRankDataRepositoryImpl implements UserRankDataRepositoryCustom {
+public class PowerUserRepositoryImpl implements PowerUserRepositoryCustom {
 
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public List<UserRankData> findByPeriodWithCursor(
+  public List<PowerUser> findByPeriodWithCursor(
       Period period,
       LocalDate periodDate,
       String direction,
@@ -27,7 +27,7 @@ public class UserRankDataRepositoryImpl implements UserRankDataRepositoryCustom 
       Instant after,
       int limit
   ) {
-    QUserRankData urd = QUserRankData.userRankData;
+    QPowerUser urd = QPowerUser.powerUser;
     BooleanBuilder cond = new BooleanBuilder()
         .and(urd.periodType.eq(period))
         .and(urd.periodDate.eq(periodDate));
@@ -55,7 +55,7 @@ public class UserRankDataRepositoryImpl implements UserRankDataRepositoryCustom 
 
   @Override
   public long countByPeriod(Period period, LocalDate periodDate) {
-    QUserRankData urd = QUserRankData.userRankData;
+    QPowerUser urd = QPowerUser.powerUser;
     return queryFactory
         .selectFrom(urd)
         .where(urd.periodType.eq(period)

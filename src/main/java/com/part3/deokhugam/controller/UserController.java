@@ -3,7 +3,7 @@ package com.part3.deokhugam.controller;
 import com.part3.deokhugam.api.UserApi;
 import com.part3.deokhugam.domain.User;
 import com.part3.deokhugam.domain.enums.Period;
-import com.part3.deokhugam.dto.pagination.CursorPageResponseUserRankDataDto;
+import com.part3.deokhugam.dto.pagination.CursorPageResponsePowerUserDto;
 import com.part3.deokhugam.dto.user.UserDto;
 import com.part3.deokhugam.dto.user.UserLoginRequest;
 import com.part3.deokhugam.dto.user.UserLoginResponse;
@@ -11,7 +11,7 @@ import com.part3.deokhugam.dto.user.UserRegisterRequest;
 import com.part3.deokhugam.dto.user.UserUpdateRequest;
 import com.part3.deokhugam.exception.BusinessException;
 import com.part3.deokhugam.exception.ErrorCode;
-import com.part3.deokhugam.service.UserRankDataService;
+import com.part3.deokhugam.service.PowerUserService;
 import com.part3.deokhugam.service.UserService;
 import jakarta.validation.Valid;
 import java.time.Instant;
@@ -31,7 +31,7 @@ import java.util.UUID;
 public class UserController implements UserApi {
 
   private final UserService userService;
-  private final UserRankDataService userRankDataService;
+  private final PowerUserService powerUserService;
 
   /**
    * 회원가입
@@ -114,7 +114,7 @@ public class UserController implements UserApi {
   }
 
   @Override
-  public ResponseEntity<CursorPageResponseUserRankDataDto> getPowerUsers(
+  public ResponseEntity<CursorPageResponsePowerUserDto> getPowerUsers(
       @RequestParam(name = "period", defaultValue = "DAILY") String period,
       @RequestParam(name = "direction", defaultValue = "ASC") String direction,
       @RequestParam(name = "cursor", required = false) String cursor,
@@ -128,8 +128,8 @@ public class UserController implements UserApi {
     LocalDate today = LocalDate.now();
 
     // 3) 서비스 호출
-    CursorPageResponseUserRankDataDto dto =
-        userRankDataService.getPowerUsersCursor(enumPeriod, today, direction, cursor, after, limit);
+    CursorPageResponsePowerUserDto dto = powerUserService.getPowerUsersCursor(
+        enumPeriod, today, direction, cursor, after, limit);
 
     return ResponseEntity.ok(dto);
   }
