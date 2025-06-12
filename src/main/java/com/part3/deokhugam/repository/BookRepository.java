@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface BookRepository extends JpaRepository<Book, UUID>, BookRepositoryCustom {
 
-    boolean existsByIsbn(String isbn);
+    boolean existsByIsbnAndDeletedFalse(String isbn);
 
     Optional<Book> findByIdAndDeletedFalse(UUID bookId);
 }
