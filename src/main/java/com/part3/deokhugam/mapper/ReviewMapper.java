@@ -15,6 +15,9 @@ public interface ReviewMapper {
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "deleted", ignore = true)
   @Mapping(target = "rating", source = "request.rating")
+  @Mapping(target = "content", source = "request.content")
+  @Mapping(target = "user", source = "user")
+  @Mapping(target = "book", source = "book")
   Review toReview(ReviewCreateRequest request, User user, Book book);
 
   @Mapping(target = "bookId", source = "review.book.id")
