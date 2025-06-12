@@ -1,6 +1,8 @@
 package com.part3.deokhugam.controller;
 
+import com.part3.deokhugam.dto.pagination.CursorPageResponsePopularReviewDto;
 import com.part3.deokhugam.dto.pagination.CursorPageResponseReviewDto;
+import com.part3.deokhugam.dto.review.PopularReviewSearchCondition;
 import com.part3.deokhugam.dto.review.ReviewCreateRequest;
 import com.part3.deokhugam.dto.review.ReviewDto;
 import com.part3.deokhugam.dto.review.ReviewLikeDto;
@@ -75,17 +77,12 @@ public class ReviewController {
     return ResponseEntity.noContent().build(); // 204 No Content
   }
 
-//  @GetMapping("/popular")
-//  public ResponseEntity<CursorPageResponsePopularReviewDto> getPopularReviews(
-//      @RequestParam(value="period", defaultValue="DAILY") String period,
-//      @RequestParam(value="direction",defaultValue ="ASC") String direction,
-//      @RequestParam(value = "cursor", required = false) String cursor,
-//      @RequestParam(value = "after", required = false) Instant after,
-//      @RequestParam(value = "limit", defaultValue = "50", required = false) int limit
-//  ){
-//    CursorPageResponsePopularReviewDto dto = reviewService.getPopularReviews();
-//    return ResponseEntity.status(HttpStatus.OK).body(dto);
-//  }
+  @GetMapping("/popular")
+  public ResponseEntity<CursorPageResponsePopularReviewDto> getPopularReviews(
+     PopularReviewSearchCondition condition){
+    CursorPageResponsePopularReviewDto dto = reviewService.getPopularReviews(condition);
+    return ResponseEntity.status(HttpStatus.OK).body(dto);
+  }
 
   @DeleteMapping("/{reviewId}/hard")
   public ResponseEntity<Void> hardDelete(

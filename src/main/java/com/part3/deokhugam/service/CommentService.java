@@ -2,6 +2,7 @@ package com.part3.deokhugam.service;
 
 import com.part3.deokhugam.domain.Comment;
 import com.part3.deokhugam.domain.Review;
+import com.part3.deokhugam.domain.ReviewMetrics;
 import com.part3.deokhugam.domain.User;
 import com.part3.deokhugam.dto.comment.CommentCreateRequest;
 import com.part3.deokhugam.dto.comment.CommentDto;
@@ -13,6 +14,7 @@ import com.part3.deokhugam.exception.ReviewException;
 import com.part3.deokhugam.exception.UserException;
 import com.part3.deokhugam.mapper.CommentMapper;
 import com.part3.deokhugam.repository.CommentRepository;
+import com.part3.deokhugam.repository.ReviewMetricsRepository;
 import com.part3.deokhugam.repository.ReviewRepository;
 import com.part3.deokhugam.repository.UserRepository;
 import java.time.Instant;
@@ -31,7 +33,9 @@ public class CommentService {
   private final CommentRepository commentRepository;
   private final UserRepository userRepository;
   private final ReviewRepository reviewRepository;
+  private final ReviewMetricsRepository reviewMetricsRepository;
   private final CommentMapper commentMapper;
+  private final NotificationService notificationService;
 
   @Transactional
   public CommentDto create(CommentCreateRequest request) {
@@ -42,8 +46,24 @@ public class CommentService {
         .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND,
             Map.of("reviewId", request.getReviewId().toString())));
 
-    Comment comment = commentMapper.toEntity(request, user, review);
-    Comment savedComment = commentRepository.save(comment);
+    Comment savedComment = commentRepository.save(
+        commentMapper.toEntity(request, user, review)
+    );
+
+    ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(review.getId())
+        .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_METRICS_NOT_FOUND,
+            Map.of("reviewMetricsId", review.getId().toString())));
+    reviewMetrics.increaseCommentCount();
+
+    String notifContent = review.getContent().length() <= 50
+        ? review.getContent()
+        : review.getContent().substring(0, 50) + "...";
+
+    notificationService.createNotification(
+        review.getUser().getId(),
+        review,
+        notifContent + "님이 나의 리뷰에 댓글을 남겼습니다."
+    );
 
     return commentMapper.toDto(savedComment);
   }
@@ -114,6 +134,10 @@ public class CommentService {
           ));
     }
     comment.markAsDeleted();
+    ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(comment.getReview().getId())
+        .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_METRICS_NOT_FOUND,
+            Map.of("reviewMetricsId", comment.getReview().getId().toString())));
+    reviewMetrics.decreaseCommentCount();
   }
 
   @Transactional
@@ -129,5 +153,11 @@ public class CommentService {
           ));
     }
     commentRepository.delete(comment);
+    if (!comment.isDeleted()) {
+      ReviewMetrics reviewMetrics = reviewMetricsRepository.findById(comment.getReview().getId())
+          .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_METRICS_NOT_FOUND,
+              Map.of("reviewMetricsId", comment.getReview().getId().toString())));
+      reviewMetrics.decreaseCommentCount();
+    }
   }
 }

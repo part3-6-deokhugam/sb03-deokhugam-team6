@@ -14,4 +14,5 @@ public class UserException extends BusinessException {
   public UserException(ErrorCode errorCode, Map<String, String> details) {
     super(errorCode, details);
   }
+
 }

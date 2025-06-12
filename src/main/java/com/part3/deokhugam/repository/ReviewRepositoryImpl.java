@@ -35,6 +35,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
     BooleanBuilder where = new BooleanBuilder();
 
+    where.and(review.deleted.isFalse());
+
     if (condition.getUserId() != null) {
       where.and(review.user.id.eq(condition.getUserId()));
     }

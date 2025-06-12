@@ -34,7 +34,7 @@ public class User extends BaseEntity {
 
   @Column(name = "is_deleted", nullable = false)
   private boolean deleted = false;
-  /* (다른 엔티티구현까지 기다림)
+
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Review> reviews = new ArrayList<>();
 
@@ -46,11 +46,6 @@ public class User extends BaseEntity {
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ReviewLike> reviewLikes = new ArrayList<>();
-   */
-  
-  public void updateNickname(String nickname) {
-    this.nickname = nickname;
-  }
 
   public void delete() {
     this.deleted = true;

@@ -2,8 +2,8 @@ package com.part3.deokhugam.domain;
 
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.*;
-import java.time.ZonedDateTime;
 import org.springframework.data.annotation.CreatedDate;
 
 @Entity
@@ -33,4 +33,8 @@ public class ReviewLike {
   @CreatedDate
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
+
+  public UUID getReviewId() {
+    return id != null ? id.getReviewId() : null;
+  }
 }

@@ -92,7 +92,12 @@ public class BookService {
 
   public BookDto createBook(BookCreateRequest request, MultipartFile image) {
     if (bookRepository.existsByIsbn(request.isbn())) {
-      throw new BookException(ErrorCode.BOOK_ALREADY_EXISTS, Map.of("isbn", request.isbn()));
+      throw new BookException(ErrorCode.BOOK_ALREADY_EXISTS,
+          Map.of(
+              "isbn", request.isbn(),
+              "title", request.title(),
+              "author", request.author()
+          ));
     }
 
     String thumbnailUrl = null;
@@ -135,7 +140,7 @@ public class BookService {
       result = tesseract.doOCR(bufferedImage);
     } catch (TesseractException e) {
       throw new BookException(ErrorCode.OCR_ERROR,
-          Map.of("exception", e.getMessage()));
+          Map.of("tesseractError", e.getMessage()));
     }
     return result.replaceAll("[^0-9]", "").trim();
   }

@@ -11,6 +11,7 @@ import com.part3.deokhugam.exception.ErrorCode;
 import com.part3.deokhugam.service.CommentService;
 import jakarta.validation.Valid;
 import java.time.Instant;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,10 +50,12 @@ public class CommentController implements CommentApi {
       @RequestParam(value = "limit", defaultValue = "50") int limit) {
 
     if (!direction.equalsIgnoreCase("ASC") && !direction.equalsIgnoreCase("DESC")) {
-      throw new CommentException(ErrorCode.INVALID_INPUT_VALUE, "지원하지 않는 정렬 방향입니다.");
+      throw new CommentException(ErrorCode.INVALID_SORT_DIRECTION,
+          Map.of("direction", direction));
     }
 
-    CursorPageResponseCommentDto response = commentService.findAll(reviewId, direction.toUpperCase(), cursor,
+    CursorPageResponseCommentDto response = commentService.findAll(reviewId,
+        direction.toUpperCase(), cursor,
         after, limit);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }

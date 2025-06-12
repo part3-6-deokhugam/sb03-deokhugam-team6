@@ -1,6 +1,7 @@
 package com.part3.deokhugam.service;
 
 import com.part3.deokhugam.domain.Notification;
+import com.part3.deokhugam.domain.Review;
 import com.part3.deokhugam.dto.notification.NotificationDto;
 import com.part3.deokhugam.dto.notification.NotificationUpdateRequest;
 import com.part3.deokhugam.dto.pagination.CursorPageResponseNotificationDto;
@@ -9,6 +10,7 @@ import com.part3.deokhugam.exception.NotificationException;
 import com.part3.deokhugam.mapper.NotificationMapper;
 import com.part3.deokhugam.repository.NotificationRepository;
 import java.util.Map;
+import com.part3.deokhugam.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +29,39 @@ public class NotificationService {
 
   private final NotificationRepository repo;
   private final NotificationMapper mapper;
+  private final UserRepository userRepository;
+
+  @Transactional
+  public NotificationDto createNotification(
+      UUID targetUserId,
+      Review review,
+      String customMessage
+  ) {
+    String content = chooseContent(review, customMessage);
+
+    Notification n = Notification.builder()
+        .user(userRepository.getReferenceById(targetUserId))
+        .review(review)
+        .content(content)
+        .build();
+    Notification saved = repo.save(n);
+
+    return mapper.toDto(saved);
+  }
+
+  private String chooseContent(Review review, String customMessage) {
+    if (customMessage != null && !customMessage.isBlank()) {
+      return customMessage;
+    }
+    return truncate(review.getContent(), 50);  // 최대 50자까지만
+  }
+
+  private String truncate(String text, int maxLen) {
+    if (text.length() <= maxLen) {
+      return text;
+    }
+    return text.substring(0, maxLen) + "...";
+  }
 
   /**
    * 커서 페이지 방식으로 알림 목록 조회
@@ -104,13 +139,15 @@ public class NotificationService {
             Map.of("notificationId", notificationId.toString())));
 
     if (!n.getUser().getId().equals(userId)) {
-      throw new NotificationException(ErrorCode.NOTIFICATION_FORBIDDEN, Map.of(
-          "notificationId", notificationId.toString(),
-          "userId", userId.toString()
-      ));
+      throw new NotificationException(ErrorCode.NOTIFICATION_FORBIDDEN,
+          Map.of(
+              "notificationId", notificationId.toString(),
+              "userId", userId.toString()
+          ));
     }
 
-    n.setConfirmed(req.isConfirmed());
+    mapper.updateFromRequest(req, n);
+
     return mapper.toDto(n);
   }
 
@@ -118,7 +155,8 @@ public class NotificationService {
     try {
       return Instant.parse(iso);
     } catch (Exception e) {
-      throw new NotificationException(ErrorCode.INVALID_INPUT_VALUE, Map.of("invalidParameter", iso));
+      throw new NotificationException(ErrorCode.INVALID_INPUT_VALUE,
+          Map.of("invalidParameter", iso));
     }
   }
 
@@ -132,5 +170,18 @@ public class NotificationService {
 
     // 3) 변경사항 저장
     repo.saveAll(unread);
+  }
+
+  @Transactional(readOnly = true)
+  public boolean existsNotification(
+      UUID userId,
+      UUID reviewId,
+      String content,
+      Instant start,
+      Instant end
+  ) {
+    return repo.existsByUserIdAndReviewIdAndContentAndCreatedAtBetween(
+        userId, reviewId, content, start, end
+    );
   }
 }
