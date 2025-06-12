@@ -5,7 +5,9 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+@EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name = "review_like")
 @Getter
