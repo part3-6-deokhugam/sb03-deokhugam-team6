@@ -5,10 +5,11 @@ import com.part3.deokhugam.domain.Review;
 import com.part3.deokhugam.dto.notification.NotificationDto;
 import com.part3.deokhugam.dto.notification.NotificationUpdateRequest;
 import com.part3.deokhugam.dto.pagination.CursorPageResponseNotificationDto;
-import com.part3.deokhugam.exception.BusinessException;
 import com.part3.deokhugam.exception.ErrorCode;
+import com.part3.deokhugam.exception.NotificationException;
 import com.part3.deokhugam.mapper.NotificationMapper;
 import com.part3.deokhugam.repository.NotificationRepository;
+import java.util.Map;
 import com.part3.deokhugam.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 public class NotificationService {
 
   private final NotificationRepository repo;
-  private final NotificationMapper    mapper;
+  private final NotificationMapper mapper;
   private final UserRepository userRepository;
 
   @Transactional
@@ -56,11 +57,15 @@ public class NotificationService {
   }
 
   private String truncate(String text, int maxLen) {
-    if (text.length() <= maxLen) return text;
+    if (text.length() <= maxLen) {
+      return text;
+    }
     return text.substring(0, maxLen) + "...";
   }
 
-  /** 커서 페이지 방식으로 알림 목록 조회 */
+  /**
+   * 커서 페이지 방식으로 알림 목록 조회
+   */
   @Transactional(readOnly = true)
   public CursorPageResponseNotificationDto findNotifications(
       UUID userId, String direction,
@@ -70,7 +75,7 @@ public class NotificationService {
     Instant cursorInstant = (cursor != null && !cursor.isBlank())
         ? parseOrBadRequest(cursor)
         : null;
-    Instant afterInstant  = (after  != null && !after.isBlank())
+    Instant afterInstant = (after != null && !after.isBlank())
         ? parseOrBadRequest(after)
         : null;
 
@@ -106,7 +111,7 @@ public class NotificationService {
     Instant nextCursor = hasNext
         ? page.get(pageSize - 1).getCreatedAt()
         : null;
-    Instant nextAfter  = !page.isEmpty()
+    Instant nextAfter = !page.isEmpty()
         ? page.get(0).getCreatedAt()
         : null;
 
@@ -122,16 +127,23 @@ public class NotificationService {
         .build();
   }
 
-  /** 단일 알림 읽음 상태 업데이트 */
+  /**
+   * 단일 알림 읽음 상태 업데이트
+   */
   @Transactional
   public NotificationDto updateConfirmed(
       UUID notificationId, UUID userId, NotificationUpdateRequest req
   ) {
     Notification n = repo.findById(notificationId)
-        .orElseThrow(() -> new BusinessException(ErrorCode.NOTIFICATION_NOT_FOUND));
+        .orElseThrow(() -> new NotificationException(ErrorCode.NOTIFICATION_NOT_FOUND,
+            Map.of("notificationId", notificationId.toString())));
 
     if (!n.getUser().getId().equals(userId)) {
-      throw new BusinessException(ErrorCode.NO_NOTIFICATION_PERMISSION);
+      throw new NotificationException(ErrorCode.NOTIFICATION_FORBIDDEN,
+          Map.of(
+              "notificationId", notificationId.toString(),
+              "userId", userId.toString()
+          ));
     }
 
     mapper.updateFromRequest(req, n);
@@ -143,7 +155,8 @@ public class NotificationService {
     try {
       return Instant.parse(iso);
     } catch (Exception e) {
-      throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+      throw new NotificationException(ErrorCode.INVALID_INPUT_VALUE,
+          Map.of("invalidParameter", iso));
     }
   }
 

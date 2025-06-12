@@ -3,11 +3,10 @@ package com.part3.deokhugam.service;
 import com.part3.deokhugam.domain.User;
 import com.part3.deokhugam.dto.user.UserDto;
 import com.part3.deokhugam.dto.user.UserLoginRequest;
-import com.part3.deokhugam.dto.user.UserLoginResponse;
 import com.part3.deokhugam.dto.user.UserRegisterRequest;
 import com.part3.deokhugam.dto.user.UserUpdateRequest;
-import com.part3.deokhugam.exception.BusinessException;
 import com.part3.deokhugam.exception.ErrorCode;
+import com.part3.deokhugam.exception.UserException;
 import com.part3.deokhugam.mapper.UserMapper;
 import com.part3.deokhugam.repository.UserRepository;
 import java.util.Map;
@@ -32,8 +31,8 @@ public class UserService {
   public UserDto register(UserRegisterRequest req) {
     userRepository.findByEmailAndDeletedFalse(req.getEmail())
         .ifPresent(existing -> {
-          throw new BusinessException(
-              ErrorCode.EMAIL_DUPLICATION,
+          throw new UserException(
+              ErrorCode.EMAIL_ALREADY_EXISTS,
               Map.of("email", req.getEmail())
           );
         });
@@ -46,8 +45,8 @@ public class UserService {
       User saved = userRepository.save(user);
       return UserDto.fromEntity(saved);
     } catch (DataIntegrityViolationException e) {
-      throw new BusinessException(
-          ErrorCode.EMAIL_DUPLICATION,
+      throw new UserException(
+          ErrorCode.EMAIL_ALREADY_EXISTS,
           Map.of("email", req.getEmail())
       );
     }
@@ -58,16 +57,16 @@ public class UserService {
   public User login(UserLoginRequest req) {
     // 1) 이메일로 사용자 조회
     User user = userRepository.findByEmailAndDeletedFalse(req.getEmail())
-        .orElseThrow(() -> new BusinessException(
-            ErrorCode.UNAUTHORIZED,
-            "이메일 또는 비밀번호가 잘못되었습니다."
+        .orElseThrow(() -> new UserException(
+            ErrorCode.LOGIN_FAILED,
+            Map.of("email", req.getEmail(), "reason", "이메일이 잘못되었습니다.")
         ));
 
     // 2) 비밀번호 검증
     if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-      throw new BusinessException(
-          ErrorCode.UNAUTHORIZED,
-          "이메일 또는 비밀번호가 잘못되었습니다."
+      throw new UserException(
+          ErrorCode.LOGIN_FAILED,
+          Map.of("email", req.getEmail(), "reason", "비밀번호가 잘못되었습니다.")
       );
     }
 
@@ -80,9 +79,9 @@ public class UserService {
     try {
       return UUID.fromString(id);
     } catch (IllegalArgumentException e) {
-      throw new BusinessException(
+      throw new UserException(
           ErrorCode.INVALID_INPUT_VALUE,
-          "유효하지 않은 UUID 형식: " + id
+          Map.of("input", id)
       );
     }
   }
@@ -93,9 +92,9 @@ public class UserService {
     UUID uuid = parseUUID(userId);
     User user = userRepository.findById(uuid)
         .filter(u -> !u.isDeleted())
-        .orElseThrow(() -> new BusinessException(
-            ErrorCode.ENTITY_NOT_FOUND,
-            "userId: " + userId
+        .orElseThrow(() -> new UserException(
+            ErrorCode.USER_NOT_FOUND,
+            Map.of("userId", userId)
         ));
 
     return userMapper.toDto(user);
@@ -107,9 +106,9 @@ public class UserService {
     UUID uuid = parseUUID(userId);
     User user = userRepository.findById(uuid)
         .filter(u -> !u.isDeleted())
-        .orElseThrow(() -> new BusinessException(
-            ErrorCode.ENTITY_NOT_FOUND,
-            "사용자를 찾을 수 없습니다: " + userId
+        .orElseThrow(() -> new UserException(
+            ErrorCode.USER_NOT_FOUND,
+            Map.of("userId", userId)
         ));
 
     userMapper.updateFromDto(req, user);
@@ -123,9 +122,9 @@ public class UserService {
     UUID uuid = parseUUID(userId);
     User user = userRepository.findById(uuid)
         .filter(u -> !u.isDeleted())
-        .orElseThrow(() -> new BusinessException(
-            ErrorCode.ENTITY_NOT_FOUND,
-            "사용자를 찾을 수 없습니다: " + userId
+        .orElseThrow(() -> new UserException(
+            ErrorCode.USER_NOT_FOUND,
+            Map.of("userId", userId)
         ));
 
     user.delete();
@@ -138,9 +137,9 @@ public class UserService {
     UUID uuid = parseUUID(userId);
     // 존재 여부 체크
     User user = userRepository.findById(uuid)
-        .orElseThrow(() -> new BusinessException(
-            ErrorCode.ENTITY_NOT_FOUND,
-            "사용자를 찾을 수 없습니다: " + userId
+        .orElseThrow(() -> new UserException(
+            ErrorCode.USER_NOT_FOUND,
+            Map.of("userId", userId)
         ));
     // 실제 삭제
     userRepository.delete(user);
