@@ -293,7 +293,7 @@ public class ReviewService {
     UUID bookId = review.getBook().getId();
 
     BookMetrics bookMetrics = bookMetricsRepository.findById(bookId)
-        .orElseThrow(() -> new BookException(Errorcode.BOOK_NOT_FOUND,
+        .orElseThrow(() -> new BookException(ErrorCode.BOOK_NOT_FOUND,
           Map.of("bookMetricsId", bookId.toString())));
 
     if(!review.isDeleted()&&change!=0){
