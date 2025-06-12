@@ -128,8 +128,7 @@ public class ReviewService {
     ReviewMetrics metrics = reviewMetricsMapper.toReviewMetrics(review);
     review.setMetrics(metrics);
 
-    Review savedReview = reviewRepository.save(review); // metrics도 같이 저장됨
-
+    Review savedReview = reviewRepository.save(review);
     ReviewMetrics savedMetrics = reviewMetricsRepository.save(metrics);
 
     return reviewMapper.toDto(savedReview, savedMetrics);
@@ -158,10 +157,12 @@ public class ReviewService {
       );
       reviewLikeRepository.save(reviewLike);
 
+      review.getMetrics().setLikeCount(review.getMetrics().getLikeCount() + 1);
       return reviewLikeMapper.toReviewLikeDto(userId, reviewId, true);
     }
 
     reviewLike.setLiked(false);
+    review.getMetrics().setLikeCount(review.getMetrics().getLikeCount() - 1);
     return reviewLikeMapper.toReviewLikeDto(userId, reviewId, false);
   }
 
@@ -243,11 +244,9 @@ public class ReviewService {
         .map(popularReviewMapper::toDto)
         .toList();
 
-    // 5. 다음 커서 계산
     String nextCursor = hasNext ? String.valueOf(popularReviews.get(popularReviews.size() - 1).getRank()) : null;
     Instant nextAfter = hasNext ? popularReviews.get(popularReviews.size() - 1).getCreatedAt() : null;
 
-    // 6. 전체 개수
     int totalCount = popularReviewRepository.countByPeriodType(condition.getPeriod());
 
     return new CursorPageResponsePopularReviewDto(
