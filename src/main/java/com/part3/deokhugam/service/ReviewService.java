@@ -157,22 +157,42 @@ public class ReviewService {
         .orElse(reviewLikeMapper.toReviewLike(user, review, false));
 
     if (!reviewLike.isLiked()) {
-      reviewLike.setLiked(true);
+      // — 이제 “좋아요” 누르는 로직 —
 
+      // (a) 알림 중복 방지: 같은 리뷰에 같은 메시지의 알림이 이미 있으면 skip
       String notifContent = user.getNickname() + "님이 좋아요를 눌렀습니다.";
-      notificationService.createNotification(
+      boolean exists = notificationService.existsNotification(
           review.getUser().getId(),
-          review,
-          notifContent
+          review.getId(),
+          notifContent,
+          /* 기간 검사 원하면 start,end 넣고 아니면 바로 */
+          null, null
       );
-      reviewLikeRepository.save(reviewLike);
+      if (!exists) {
+        notificationService.createNotification(
+            review.getUser().getId(),
+            review,
+            notifContent
+        );
+      }
 
+      reviewLike.setLiked(true);
+      reviewLikeRepository.save(reviewLike);
       review.getMetrics().setLikeCount(review.getMetrics().getLikeCount() + 1);
       return reviewLikeMapper.toReviewLikeDto(userId, reviewId, true);
     }
 
+    // — “좋아요 취소” 로직 —
     reviewLike.setLiked(false);
+    reviewLikeRepository.save(reviewLike);
     review.getMetrics().setLikeCount(review.getMetrics().getLikeCount() - 1);
+
+    // 취소 시 알림도 지워버리기
+    notificationService.deleteLikeNotification(
+        review.getUser().getId(),
+        review.getId()
+    );
+
     return reviewLikeMapper.toReviewLikeDto(userId, reviewId, false);
   }
 

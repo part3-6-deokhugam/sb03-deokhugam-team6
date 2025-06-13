@@ -39,6 +39,12 @@ public class NotificationService {
   ) {
     String content = chooseContent(review, customMessage);
 
+    boolean exists = repo.existsByUserIdAndReviewIdAndContent(
+        targetUserId, review.getId(), content);
+    if (exists) {
+      return null;
+    }
+
     Notification n = Notification.builder()
         .user(userRepository.getReferenceById(targetUserId))
         .review(review)
@@ -183,5 +189,12 @@ public class NotificationService {
     return repo.existsByUserIdAndReviewIdAndContentAndCreatedAtBetween(
         userId, reviewId, content, start, end
     );
+  }
+
+  // 좋아요 삭제시 기존 알림 삭제
+  @Transactional
+  public void deleteLikeNotification(UUID targetUserId, UUID reviewId) {
+    // 키워드로 알림구분
+    repo.deleteLikeNotifications(targetUserId, reviewId, "좋아요");
   }
 }

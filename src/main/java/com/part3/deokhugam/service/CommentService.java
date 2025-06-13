@@ -56,14 +56,24 @@ public class CommentService {
     reviewMetrics.increaseCommentCount();
     reviewMetricsRepository.save(reviewMetrics);
 
-    String notifContent = review.getContent().length() <= 50
-        ? review.getContent()
-        : review.getContent().substring(0, 50) + "...";
+    String commenterNickname = user.getNickname();
+
+    String commentContent = savedComment.getContent();
+
+    String commentSnippet = commentContent.length() <= 50
+        ? commentContent
+        : commentContent.substring(0, 50) + "...";
+
+    String notifContent = String.format(
+        "[%s]님이 나의 리뷰에 댓글을 남겼습니다.%n%s",
+        commenterNickname,
+        commentSnippet
+    );
 
     notificationService.createNotification(
         review.getUser().getId(),
         review,
-        notifContent + "님이 나의 리뷰에 댓글을 남겼습니다."
+        notifContent
     );
 
     return commentMapper.toDto(savedComment);
