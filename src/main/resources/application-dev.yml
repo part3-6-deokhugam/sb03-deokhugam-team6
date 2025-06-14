@@ -13,6 +13,10 @@ spring:
     hibernate:
       ddl-auto: update
 
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
 logging:
   level:
     com.part3.deokhugam: DEBUG
