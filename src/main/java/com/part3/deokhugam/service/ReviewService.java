@@ -43,6 +43,7 @@ import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -98,8 +99,8 @@ public class ReviewService {
       if (condition.getOrderBy().equals("createdAt")) {
         nextCursor = nextAfter.toString();
       } else {
-        double lastRating = last.getRating();
-        nextCursor = Double.toString(lastRating);
+        BigDecimal lastRating = last.getRating();
+        nextCursor = String.valueOf(lastRating);
       }
     }
 
@@ -236,7 +237,7 @@ public class ReviewService {
     boolean likedByMe = isLikedByMe(reviewId, userId);
 
     review.setContent(request.getContent());
-    review.setRating(request.getRating());
+    review.setRating(BigDecimal.valueOf(request.getRating()));
 
     updateByReviewChange(review, 0);
 
@@ -321,7 +322,9 @@ public class ReviewService {
     }
 
     double averageRating = reviewRepository.findByBookIdAndDeletedFalse(bookId).stream()
-        .mapToDouble(Review::getRating)
+        .map(Review::getRating)
+        .filter(Objects::nonNull)
+        .mapToDouble(BigDecimal::doubleValue)
         .average()
         .orElse(0.0);
 
