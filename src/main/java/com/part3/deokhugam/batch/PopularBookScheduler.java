@@ -14,7 +14,7 @@ public class PopularBookScheduler {
     private final BookService bookService;
 
     // 매일 자정 배치 연산 수행
-    @Scheduled(cron = "${scheduler.batch.start-time}")
+    @Scheduled(cron = "${scheduler.batch.start-time}", zone = "Asia/Seoul")
     public void updateRanking() {
         for (Period period : Period.values()) {
             bookService.calculateRanking(period);
