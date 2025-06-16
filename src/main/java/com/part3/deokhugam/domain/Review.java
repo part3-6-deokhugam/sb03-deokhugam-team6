@@ -42,13 +42,13 @@ public class Review extends BaseEntity {
   @JoinColumn(name = "book_id", nullable = false)
   private Book book;
 
-  @Column(nullable = false, columnDefinition = "TEXT")
+  @Column(name = "content",nullable = false, columnDefinition = "TEXT")
   private String content;
 
-  @Column(nullable = false)
+  @Column(name = "rating",nullable = false)
   private Double rating;
 
-  @Column(nullable = false)
+  @Column(name = "deleted",nullable = false)
   @Builder.Default
   private boolean deleted = false;
 
