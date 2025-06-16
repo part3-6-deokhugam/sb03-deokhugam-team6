@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -47,14 +48,14 @@ public class PopularReview extends BaseEntity {
   private LocalDate periodDate;
 
   @Column(name = "score", nullable = false)
-  private double score;
+  private BigDecimal score;
 
   @Column(name = "rank", nullable = false)
-  private int rank;
+  private Integer rank;
 
   @Column(name = "like_count", nullable = false)
-  private int likeCount;
+  private Integer likeCount;
 
   @Column(name = "comment_count", nullable = false)
-  private int commentCount;
+  private Integer commentCount;
 }
