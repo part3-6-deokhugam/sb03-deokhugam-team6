@@ -315,7 +315,7 @@ public class BookService {
 
           // Integer → BigDecimal 변환하여 평균 계산
           BigDecimal avgRating = reviewList.stream()
-              .map(r -> BigDecimal.valueOf(r.getRating()))
+              .map(Review::getRating)
               .reduce(BigDecimal.ZERO, BigDecimal::add)
               .divide(BigDecimal.valueOf(reviewCount), 2, RoundingMode.HALF_UP);
 
