@@ -35,11 +35,11 @@ public class ReviewMetrics extends BaseEntity {
 
   @Column(name = "like_count", nullable = false)
   @Builder.Default
-  private int likeCount = 0;
+  private Integer likeCount = 0;
 
   @Column(name = "comment_count", nullable = false)
   @Builder.Default
-  private int commentCount = 0;
+  private Integer commentCount = 0;
 
   public void increaseCommentCount() {
     this.commentCount++;
