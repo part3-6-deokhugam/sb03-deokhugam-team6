@@ -1,5 +1,6 @@
 package com.part3.deokhugam.controller;
 
+import com.part3.deokhugam.api.ReviewApi;
 import com.part3.deokhugam.dto.pagination.CursorPageResponsePopularReviewDto;
 import com.part3.deokhugam.dto.pagination.CursorPageResponseReviewDto;
 import com.part3.deokhugam.dto.review.PopularReviewSearchCondition;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/reviews")
-public class ReviewController {
+public class ReviewController implements ReviewApi {
 
   private final ReviewService reviewService;
 
