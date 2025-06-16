@@ -14,8 +14,10 @@ import com.part3.deokhugam.exception.UserException;
 import com.part3.deokhugam.service.PowerUserService;
 import com.part3.deokhugam.service.UserService;
 import jakarta.validation.Valid;
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -145,13 +147,23 @@ public class UserController implements UserApi {
     Period enumPeriod = Period.valueOf(period);
 
     // 2) periodDate 기본값: 오늘 날짜
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+    LocalDate periodDate = calcPeriodDate(enumPeriod, today);
 
     // 3) 서비스 호출
     CursorPageResponsePowerUserDto dto = powerUserService.getPowerUsersCursor(
-        enumPeriod, today, direction, cursor, after, limit);
+        enumPeriod, periodDate, direction, cursor, after, limit);
 
     return ResponseEntity.ok(dto);
+  }
+
+  private LocalDate calcPeriodDate(Period period, LocalDate today) {
+    return switch (period) {
+      case DAILY    -> today;
+      case WEEKLY   -> today.with(DayOfWeek.MONDAY);
+      case MONTHLY  -> today.withDayOfMonth(1);
+      case ALL_TIME -> LocalDate.of(1970, 1, 1);
+    };
   }
 
   /**
