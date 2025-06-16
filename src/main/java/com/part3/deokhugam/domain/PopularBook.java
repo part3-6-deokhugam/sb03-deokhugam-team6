@@ -35,7 +35,7 @@ public class PopularBook extends BaseEntity {
     @Column(nullable = false)
     private Integer rank;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
