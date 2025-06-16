@@ -20,40 +20,41 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Builder;
 
-  @Entity
-  @Table(name = "popular_review",
-      uniqueConstraints = @UniqueConstraint(
-          columnNames = {"review_id", "period_type", "period_date"}))
-  @Getter
-  @Setter
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @Builder
-  public class PopularReview extends BaseEntity {
-    @Id
-    @GeneratedValue
-    private UUID id;
+@Entity
+@Table(name = "popular_review",
+    uniqueConstraints = @UniqueConstraint(
+        columnNames = {"review_id", "period_type", "period_date"}))
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class PopularReview extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "review_id", nullable = false)
-    private Review review;
+  @Id
+  @GeneratedValue
+  private UUID id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "period_type", nullable = false)
-    private Period periodType;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "review_id", nullable = false)
+  private Review review;
 
-    @Column(name = "period_date", nullable = false)
-    private LocalDate periodDate;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "period_type", nullable = false)
+  private Period periodType;
 
-    @Column(nullable = false)
-    private double score;
+  @Column(name = "period_date", nullable = false)
+  private LocalDate periodDate;
 
-    @Column(nullable = false)
-    private int rank;
+  @Column(name = "score", nullable = false)
+  private double score;
 
-    @Column(nullable = false)
-    private int likeCount;
+  @Column(name = "rank", nullable = false)
+  private int rank;
 
-    @Column(nullable = false)
-    private int commentCount;
-  }
+  @Column(name = "like_count", nullable = false)
+  private int likeCount;
+
+  @Column(name = "comment_count", nullable = false)
+  private int commentCount;
+}
