@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -58,4 +59,23 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
 
   boolean existsByUserIdAndReviewIdAndContentAndCreatedAtBetween(UUID userId, UUID reviewId, String content, Instant start,
       Instant end);
+
+  // 좋아요 알림 중복 검사용
+  boolean existsByUserIdAndReviewIdAndContent(UUID userId, UUID reviewId, String content);
+
+  // 좋아요 취소 시 해당 알림 삭제용
+  void deleteByUserIdAndReviewId(UUID userId, UUID reviewId);
+
+  @Modifying
+  @Query("""
+    DELETE FROM Notification n
+     WHERE n.user.id    = :userId
+       AND n.review.id  = :reviewId
+       AND n.content LIKE %:keyword%   
+  """)
+  void deleteLikeNotifications(
+      @Param("userId") UUID userId,
+      @Param("reviewId") UUID reviewId,
+      @Param("keyword")  String keyword
+  );
 }
