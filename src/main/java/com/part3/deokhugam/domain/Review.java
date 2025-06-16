@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -46,7 +47,7 @@ public class Review extends BaseEntity {
   private String content;
 
   @Column(name = "rating",nullable = false)
-  private Double rating;
+  private BigDecimal rating;
 
   @Column(name = "deleted",nullable = false)
   @Builder.Default
