@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @EntityListeners(AuditingEntityListener.class)
@@ -35,6 +36,10 @@ public class ReviewLike {
   @CreatedDate
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
+
+  @LastModifiedDate
+  @Column(name = "updated_at", nullable = false)
+  private Instant updatedAt;
 
   public UUID getReviewId() {
     return id != null ? id.getReviewId() : null;

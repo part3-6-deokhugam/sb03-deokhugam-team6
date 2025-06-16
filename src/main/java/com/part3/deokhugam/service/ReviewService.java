@@ -396,9 +396,9 @@ public class ReviewService {
               int likeCount = (int) review.getLikes().stream()
                   .filter(like ->
                       like.isLiked() &&
-                          like.getCreatedAt() != null &&
-                          !like.getCreatedAt().isBefore(finalStart) &&
-                          !like.getCreatedAt().isAfter(finalEnd)
+                          like.getUpdatedAt() != null &&
+                          !like.getUpdatedAt().isBefore(finalStart) &&
+                          !like.getUpdatedAt().isAfter(finalEnd)
                   )
                   .count();
 

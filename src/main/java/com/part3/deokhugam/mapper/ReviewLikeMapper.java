@@ -17,6 +17,7 @@ public interface ReviewLikeMapper {
   @Mapping(target = "review", source = "review")
   @Mapping(target = "liked", source = "liked")
   @Mapping(target = "createdAt", ignore = true)
+  @Mapping(target="updatedAt", ignore=true)
   ReviewLike toReviewLikeWithoutId(User user, Review review, boolean liked);
 
   default ReviewLike toReviewLike(User user, Review review, boolean liked) {
