@@ -7,6 +7,7 @@ import com.part3.deokhugam.repository.CommentRepository;
 import com.part3.deokhugam.repository.ReviewRepository;
 import com.part3.deokhugam.repository.PowerUserRepository;
 import com.part3.deokhugam.repository.UserRepository;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,7 @@ public class UserActivityScoreScheduler {
     // DAILY, WEEKLY, MONTHLY, ALL_TIME 처리
     for (Period period : Period.values()) {
       LocalDate periodDate = calculatePeriodDate(period, today);
+      powerUserRepository.deleteByPeriodTypeAndPeriodDate(period, periodDate);
       calculatePeriod(period, periodDate);
     }
   }
@@ -58,40 +60,41 @@ public class UserActivityScoreScheduler {
 
     // 2-2) 모든 활성 유저 조회
     List<User> users = userRepository.findAll()
-        .stream().filter(u -> !u.isDeleted()).toList();
+        .stream().filter(u -> !u.isDeleted())
+        .toList();
 
-    int rank = 1;
+    // 2-3) 임시 리스트에 추가
+    List<PowerUser> list = new ArrayList<>();
     for (User u : users) {
-      UUID userId = u.getId();
+      double sum = reviewRepository.sumRatingByUserAndPeriod(u.getId(), start, end);
+      long likeCount = reviewRepository.countLikesByUserAndPeriod(u.getId(), start, end);
+      long commentCount = commentRepository.countByUserAndPeriod(u.getId(), start, end);
 
-      // 2-3) 리뷰 점수 합계 (ReviewMetrics 저장된 rating값 예시)
-      double sum = reviewRepository.sumRatingByUserAndPeriod(userId, start, end);
-      BigDecimal reviewScoreSum = BigDecimal.valueOf(sum);
-
-      // 2-4) 좋아요 수
-      long likeCount = reviewRepository.countLikesByUserAndPeriod(userId, start, end);
-
-      // 2-5) 댓글 수
-      long commentCount = commentRepository.countByUserAndPeriod(userId, start, end);
-
-      // 2-6) 활동 점수 계산: 0.5*리뷰점수 + 0.2*좋아요 + 0.3*댓글
-      BigDecimal score = reviewScoreSum
+      BigDecimal score = BigDecimal.valueOf(sum)
           .multiply(BigDecimal.valueOf(0.5))
           .add(BigDecimal.valueOf(likeCount).multiply(BigDecimal.valueOf(0.2)))
           .add(BigDecimal.valueOf(commentCount).multiply(BigDecimal.valueOf(0.3)));
 
-      // 2-7) UserRankData 엔티티 빌드 & 저장
-      PowerUser urd = PowerUser.builder()
+      list.add(PowerUser.builder()
           .user(u)
           .periodType(period)
           .periodDate(periodDate)
-          .reviewScoreSum(reviewScoreSum)
+          .reviewScoreSum(BigDecimal.valueOf(sum))
           .likeCount((int) likeCount)
           .commentCount((int) commentCount)
           .score(score)
-          .rank(rank++)
-          .build();
-      powerUserRepository.save(urd);
+          .build());
     }
+
+    // 3) 점수 내림차순 정렬
+    list.sort((a, b) -> b.getScore().compareTo(a.getScore()));
+
+    // 4) 순위 세팅
+    for (int i = 0; i < list.size(); i++) {
+      list.get(i).setRank(i + 1);
+    }
+
+    // 5) 한번에 저장
+    powerUserRepository.saveAll(list);
   }
 }
