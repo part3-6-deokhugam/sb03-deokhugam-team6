@@ -39,10 +39,12 @@ public class NotificationService {
   ) {
     String content = chooseContent(review, customMessage);
 
-    boolean exists = repo.existsByUserIdAndReviewIdAndContent(
-        targetUserId, review.getId(), content);
-    if (exists) {
-      return null;
+    if (content.contains("좋아요")) {
+      boolean existsLike = repo.existsByUserIdAndReviewIdAndContent(
+          targetUserId, review.getId(), content);
+      if (existsLike) {
+        return null;
+      }
     }
 
     Notification n = Notification.builder()

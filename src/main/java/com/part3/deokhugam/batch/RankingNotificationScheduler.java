@@ -21,8 +21,16 @@ public class RankingNotificationScheduler {
   private final ReviewMetricsRepository metricsRepo;
   private final NotificationService notificationService;
 
+  // 매일 알림
+  @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
+  public void dailyTop10() {
+    Instant start = PeriodUtils.calculateStart(Period.DAILY, ZoneId.of("Asia/Seoul"));
+    Instant end   = PeriodUtils.calculateEnd(ZoneId.of("Asia/Seoul"));
+    sendTop10Notifications(Period.DAILY, start, end);
+  }
+
   // 매주 알림 (Period.WEEKLY 쓰기)
-  @Scheduled(cron = "0 0 9 * * MON", zone = "Asia/Seoul")
+  @Scheduled(cron = "0 0 0 * * MON", zone = "Asia/Seoul")
   public void weeklyTop10() {
     Instant start = PeriodUtils.calculateStart(Period.WEEKLY, ZoneId.of("Asia/Seoul"));
     Instant end   = PeriodUtils.calculateEnd(ZoneId.of("Asia/Seoul"));
@@ -30,7 +38,7 @@ public class RankingNotificationScheduler {
   }
 
   // 매월 알림
-  @Scheduled(cron = "0 0 9 1 * *", zone = "Asia/Seoul")
+  @Scheduled(cron = "0 0 0 1 * *", zone = "Asia/Seoul")
   public void monthlyTop10() {
     Instant start = PeriodUtils.calculateStart(Period.MONTHLY, ZoneId.of("Asia/Seoul"));
     Instant end   = PeriodUtils.calculateEnd(ZoneId.of("Asia/Seoul"));
@@ -49,9 +57,7 @@ public class RankingNotificationScheduler {
 
     for (Review r : top10) {
       UUID uid = r.getUser().getId();
-      if (!notificationService.existsNotification(uid, r.getId(), tpl, start, end)) {
-        notificationService.createNotification(uid, r, tpl);
-      }
+      notificationService.createNotification(uid, r, tpl);
     }
   }
 }
