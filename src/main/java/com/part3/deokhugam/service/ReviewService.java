@@ -253,8 +253,8 @@ public class ReviewService {
       throw new ReviewException(ErrorCode.REVIEW_FORBIDDEN,
           Map.of("userId", userId.toString(), "reviewId", reviewId.toString()));
     }
-    updateByReviewChange(review, -1);
     review.setDeleted(true);
+    updateByReviewChange(review, -1);
   }
 
   @Transactional(readOnly = true)
@@ -305,7 +305,7 @@ public class ReviewService {
       throw new ReviewException(ErrorCode.REVIEW_FORBIDDEN,
           Map.of("userId", userId.toString(), "reviewId", reviewId.toString()));
     }
-    updateByReviewChange(review, -1);
+    updateByReviewChange(review, -2);
     reviewRepository.delete(review);
   }
 
@@ -316,7 +316,7 @@ public class ReviewService {
         .orElseThrow(() -> new BookException(ErrorCode.BOOK_NOT_FOUND,
           Map.of("bookMetricsId", bookId.toString())));
 
-    if(!review.isDeleted()&&change!=0){
+    if(change==1||change==-1){
       bookMetrics.setReviewCount(bookMetrics.getReviewCount() + change);
     }
 
