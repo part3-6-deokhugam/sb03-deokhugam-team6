@@ -57,4 +57,4 @@ aws:
 
 scheduler:
   batch:
-    start-time: "0 10 14 * * *"
+    start-time: "0 0 0 * * *"

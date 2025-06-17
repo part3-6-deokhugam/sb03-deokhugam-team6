@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class PopularReviewScheduler {
   private final ReviewService reviewService;
 
-  @Scheduled(cron = "0 10 14 * * *", zone = "Asia/Seoul")
+  @Scheduled(cron = "${scheduler.batch.start-time}", zone = "Asia/Seoul")
   public void updatePopularReviews() {
     for(Period period : Period.values()) {
       reviewService.calculateReview(period);

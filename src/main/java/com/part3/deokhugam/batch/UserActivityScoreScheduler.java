@@ -27,8 +27,8 @@ public class UserActivityScoreScheduler {
   private final CommentRepository         commentRepository;
   private final PowerUserRepository    powerUserRepository;
 
-  // 매일 03:00에 실행 (Asia/Seoul)
-  @Scheduled(cron = "0 10 14 * * *", zone = "Asia/Seoul")
+  // 매일 00:00에 실행 (Asia/Seoul)
+  @Scheduled(cron = "${scheduler.batch.start-time}", zone = "Asia/Seoul")
   @Transactional
   public void calculateAndSaveAllPeriods() {
     LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
