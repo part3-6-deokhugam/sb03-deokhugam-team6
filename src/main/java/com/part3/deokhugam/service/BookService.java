@@ -69,7 +69,7 @@ public class BookService {
     Instant nextAfter = null;
 
     if (hasNext) {
-      Book lastBook = books.get(limit);
+      Book lastBook = pagedBooks.get(pagedBooks.size() - 1);
       BookMetrics bookMetrics = lastBook.getBookMetrics();
       switch (orderBy) {
         case "title" -> nextCursor = lastBook.getTitle();
@@ -214,7 +214,7 @@ public class BookService {
     Instant nextAfter = null;
 
     if (hasNext) {
-      PopularBook lastPopularBook = popularBooks.get(limit);
+      PopularBook lastPopularBook = pagedBooks.get(pagedBooks.size() - 1);
       nextCursor = String.valueOf(lastPopularBook.getRank());
       nextAfter = lastPopularBook.getCreatedAt();
     }
