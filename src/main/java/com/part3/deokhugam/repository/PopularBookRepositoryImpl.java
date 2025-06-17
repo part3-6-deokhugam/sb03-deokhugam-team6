@@ -24,7 +24,7 @@ public class PopularBookRepositoryImpl implements PopularBookRepositoryCustom {
         BooleanBuilder predicate = new BooleanBuilder();
 
         predicate.and(popularBook.period.eq(Period.valueOf(period)));
-        predicate.and(popularBook.periodDate.eq(LocalDate.now().minusDays(1)));
+        predicate.and(popularBook.periodDate.eq(LocalDate.now()));
 
         OrderSpecifier<?> orderSpecifier = direction.equalsIgnoreCase("DESC") ?
                 popularBook.rank.desc() : popularBook.rank.asc();
